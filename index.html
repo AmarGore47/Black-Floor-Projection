@@ -353,27 +353,48 @@ let blobs = [];               // [{x,y,r,vx,vy}] detected movement blobs
 
 /* ════════════════════════════════════════
    CAMERA ENUMERATION
+   — Permission pehle maango, fir list karo
+   — deviceId:exact nahi use karte (source busy error fix)
 ════════════════════════════════════════ */
+let camDevices = []; // globally store karo
+
 async function enumCams(){
+  const sel = document.getElementById('cam-select');
+  sel.innerHTML = '<option value="">Requesting permission…</option>';
+
   try{
-    // Pehle ek dummy stream maango — tab browser deviceId deta hai
-    const tmp = await navigator.mediaDevices.getUserMedia({video:true,audio:false});
-    tmp.getTracks().forEach(t=>t.stop());
+    // Step 1: permission lo — bina kisi constraint ke
+    const tmp = await navigator.mediaDevices.getUserMedia({video:true, audio:false});
+    tmp.getTracks().forEach(t=>t.stop()); // immediately band karo
+
+    // Step 2: ab devices list milegi with labels
     const devs = await navigator.mediaDevices.enumerateDevices();
-    const cams = devs.filter(d=>d.kind==='videoinput');
-    const sel  = document.getElementById('cam-select');
+    camDevices  = devs.filter(d=>d.kind==='videoinput');
+
     sel.innerHTML = '';
-    cams.forEach((c,i)=>{
+
+    // "Any camera" option pehle dalo — safest fallback
+    const anyOpt = document.createElement('option');
+    anyOpt.value = '';
+    anyOpt.textContent = '🎥 Any available camera';
+    sel.appendChild(anyOpt);
+
+    camDevices.forEach((c,i)=>{
       const o = document.createElement('option');
       o.value = c.deviceId;
       o.textContent = c.label || `Camera ${i+1}`;
       sel.appendChild(o);
     });
-    if(cams.length === 0){
-      sel.innerHTML='<option value="">No camera found</option>';
+
+    if(camDevices.length === 0){
+      sel.innerHTML='<option value="">No camera found — check browser settings</option>';
     }
+
   }catch(e){
-    document.getElementById('cam-select').innerHTML='<option value="">Camera permission denied</option>';
+    // Permission denied — retry button dikhao
+    sel.innerHTML='<option value="">⚠ Permission denied — click below</option>';
+    const retryBtn = document.getElementById('cam-retry-btn');
+    if(retryBtn) retryBtn.style.display='block';
   }
 }
 enumCams();
@@ -396,33 +417,56 @@ async function beginCalib(){
   document.getElementById('splash').style.display='none';
   document.getElementById('calib-overlay').style.display='flex';
 
-  // Start camera stream
   const deviceId = document.getElementById('cam-select').value;
-  const constraints = {
-    video: deviceId
-      ? {deviceId:{exact:deviceId}, width:{ideal:320}, height:{ideal:240}}
-      : {width:{ideal:320}, height:{ideal:240}},
-    audio: false
-  };
+
+  // FIX: deviceId:exact nahi — "ideal" use karo ya bilkul mat dalo
+  // exact = agar wo device busy ho ya missing ho → crash
+  // ideal = browser best match dhundega
+  let constraints;
+  if(deviceId){
+    constraints = {
+      video:{ deviceId:{ideal:deviceId}, width:{ideal:320}, height:{ideal:240} },
+      audio: false
+    };
+  } else {
+    // Any camera — no deviceId at all
+    constraints = {
+      video:{ width:{ideal:320}, height:{ideal:240} },
+      audio: false
+    };
+  }
+
+  // Stop old stream if any
+  if(activeStream) activeStream.getTracks().forEach(t=>t.stop());
+
   try{
     activeStream = await navigator.mediaDevices.getUserMedia(constraints);
   }catch(e){
-    alert('Camera access failed: '+e.message);
-    document.getElementById('splash').style.display='flex';
-    document.getElementById('calib-overlay').style.display='none';
-    return;
+    // Fallback: try without any video constraints
+    try{
+      activeStream = await navigator.mediaDevices.getUserMedia({video:true, audio:false});
+    }catch(e2){
+      document.getElementById('calib-overlay').style.display='none';
+      document.getElementById('splash').style.display='flex';
+      showCamError(e2.message);
+      return;
+    }
   }
 
   const vid = document.getElementById('raw-video');
   vid.srcObject = activeStream;
-  await new Promise(r=>vid.onloadedmetadata=r);
+  await new Promise(r => { vid.onloadedmetadata=r; });
   vid.play();
 
-  // Show preview in calib screen
   document.getElementById('calib-preview').srcObject = activeStream;
-
-  // Countdown then capture bg
   startCalibCountdown();
+}
+
+function showCamError(msg){
+  const sel = document.getElementById('cam-select');
+  sel.innerHTML=`<option value="">⚠ ${msg}</option>`;
+  const retryBtn = document.getElementById('cam-retry-btn');
+  if(retryBtn) retryBtn.style.display='block';
 }
 
 function startCalibCountdown(sec=5){
