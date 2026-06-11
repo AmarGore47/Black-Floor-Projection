@@ -10,9 +10,7 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
 canvas{position:fixed;inset:0;width:100%;height:100%;}
 
-/* ══════════════════════════════
-   SPLASH
-══════════════════════════════ */
+/* ══ SPLASH ══ */
 #splash{
   position:fixed;inset:0;z-index:60;
   background:radial-gradient(ellipse at 50% 55%,#07071a,#000);
@@ -46,9 +44,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;}
 #cam-notice code{background:rgba(255,255,255,.1);padding:1px 5px;border-radius:4px;
   font-size:10px;color:#fff;}
 
-/* ══════════════════════════════
-   LOADING
-══════════════════════════════ */
+/* ══ LOADING ══ */
 #loading{position:fixed;inset:0;background:#000;z-index:55;
   display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
 #loading p{color:rgba(255,255,255,.45);font-size:12px;letter-spacing:.18em;text-align:center;max-width:260px;}
@@ -56,9 +52,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;}
   border-top-color:rgba(255,255,255,.65);border-radius:50%;animation:spin .8s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 
-/* ══════════════════════════════
-   TOP BAR  (ANGLED | MODE pill)
-══════════════════════════════ */
+/* ══ TOP BAR ══ */
 #top-bar{position:fixed;top:14px;left:14px;right:14px;z-index:30;
   display:none;align-items:center;gap:8px;pointer-events:none;}
 .pill{display:flex;align-items:center;gap:6px;
@@ -75,36 +69,44 @@ canvas{position:fixed;inset:0;width:100%;height:100%;}
 #status-text{font-size:10px;color:rgba(255,255,255,.25);letter-spacing:.1em;
   margin-left:auto;padding-right:2px;pointer-events:none;}
 
-/* ══════════════════════════════
-   LEFT VERTICAL EFFECTS STRIP
-══════════════════════════════ */
+/* ══ FX STRIP — BOTTOM HORIZONTAL (moved from left side) ══ */
 #fx-strip{
-  position:fixed;left:14px;top:50%;transform:translateY(-50%);
-  z-index:30;display:none;flex-direction:column;gap:7px;
+  position:fixed;
+  bottom:clamp(130px,22vw,165px); /* sits above bottom-row */
+  left:0;right:0;
+  z-index:30;
+  display:none;
+  flex-direction:row;
+  gap:6px;
+  padding:0 14px;
+  overflow-x:auto;
+  justify-content:center;
+  flex-wrap:nowrap;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
 }
+#fx-strip::-webkit-scrollbar{display:none;}
 .fx-pill{
-  display:flex;align-items:center;gap:7px;
-  padding:8px 14px;border-radius:30px;
-  background:rgba(15,15,15,.8);border:1px solid rgba(255,255,255,.1);
+  display:flex;align-items:center;gap:6px;
+  padding:7px 12px;border-radius:30px;
+  background:rgba(15,15,15,.82);border:1px solid rgba(255,255,255,.1);
   backdrop-filter:blur(10px);cursor:pointer;
   font-size:10px;letter-spacing:.12em;text-transform:uppercase;
   color:rgba(255,255,255,.42);transition:all .22s;white-space:nowrap;
+  flex-shrink:0;
 }
 .fx-pill:hover{color:rgba(255,255,255,.8);border-color:rgba(255,255,255,.35);}
 .fx-pill.active{background:rgba(255,255,255,.14);color:#fff;
   border-color:rgba(255,255,255,.65);box-shadow:0 0 16px rgba(255,255,255,.06);}
 .fx-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
 
-/* ══════════════════════════════
-   BOTTOM ACTION ROW
-══════════════════════════════ */
+/* ══ BOTTOM ROW ══ */
 #bottom-row{
   position:fixed;bottom:clamp(16px,4vw,24px);left:0;right:0;
   z-index:30;display:none;
   flex-direction:column;align-items:center;gap:8px;
   padding:0 14px;
 }
-/* big primary action pill */
 #primary-action{
   display:flex;align-items:center;gap:10px;
   padding:14px 28px;border-radius:40px;
@@ -115,7 +117,6 @@ canvas{position:fixed;inset:0;width:100%;height:100%;}
 }
 #primary-action:hover{background:rgba(255,255,255,.12);}
 #primary-action .pa-icon{font-size:20px;}
-/* small secondary pills row */
 #sec-row{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;}
 .sec-pill{
   display:flex;align-items:center;gap:5px;
@@ -129,10 +130,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;}
 .sec-pill.on{color:rgba(255,255,255,.85);border-color:rgba(255,255,255,.42);
   background:rgba(255,255,255,.09);}
 
-/* ══════════════════════════════
-   CAMERA WINDOW  (bottom-right)
-   — matches reference photo —
-══════════════════════════════ */
+/* ══ CAMERA WINDOW (bottom-right) ══ */
 #cam-win{
   position:fixed;
   bottom:clamp(80px,14vw,110px);
@@ -147,9 +145,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;}
   display:none;
   flex-direction:column;
   touch-action:none;
-  /* starting position override when dragged */
 }
-/* header bar: "● BODY TRACK" */
 #cam-win-header{
   display:flex;align-items:center;justify-content:space-between;
   padding:7px 10px 6px;
@@ -162,9 +158,9 @@ canvas{position:fixed;inset:0;width:100%;height:100%;}
   font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.7);}
 #cam-win-title .dot{width:7px;height:7px;border-radius:50%;
   background:#22c55e;box-shadow:0 0 5px #22c55e;flex-shrink:0;}
-/* switch camera button — circular, bottom-right corner of video */
 #cam-video-wrap{position:relative;width:100%;aspect-ratio:4/3;background:#0a0a0a;overflow:hidden;}
-#cam-video-wrap video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:block;}
+/* FIX 1: video mirror is now controlled via JS — default front cam mirrored */
+#cam-video-wrap video{width:100%;height:100%;object-fit:cover;display:block;}
 #cam-video-wrap canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
 #btn-switch-cam{
   position:absolute;bottom:7px;right:7px;
@@ -177,7 +173,6 @@ canvas{position:fixed;inset:0;width:100%;height:100%;}
   backdrop-filter:blur(8px);
 }
 #btn-switch-cam:hover{background:rgba(255,255,255,.18);color:#fff;}
-/* status text below video */
 #cam-win-status{
   padding:6px 10px;
   font-size:10px;letter-spacing:.1em;
@@ -187,7 +182,6 @@ canvas{position:fixed;inset:0;width:100%;height:100%;}
 }
 #cam-win-status.inactive{color:rgba(255,255,255,.28);}
 
-/* touch fallback badge */
 #touch-badge{
   position:fixed;top:14px;right:14px;z-index:30;
   background:rgba(255,190,0,.1);border:1px solid rgba(255,200,0,.25);
@@ -244,7 +238,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;}
   <span id="status-text">detecting…</span>
 </div>
 
-<!-- ══ LEFT FX STRIP ══ -->
+<!-- ══ FX STRIP — NOW HORIZONTAL AT BOTTOM ══ -->
 <div id="fx-strip">
   <div class="fx-pill active" data-fx="firework"><span class="fx-dot" style="background:#ff5078"></span>Firework</div>
   <div class="fx-pill" data-fx="ripple"><span class="fx-dot" style="background:#40e0ff"></span>Ripple</div>
@@ -316,7 +310,17 @@ let poseResults= null;
 let started    = false;
 let facingMode = 'user';
 let activeStream = null;
-let projMode   = 0; // 0=normal 1=mirror 2=fullblack
+let projMode   = 0;
+
+/* FIX 1: apply mirror based on camera facing direction */
+function updateVideoMirror(){
+  const vid = document.getElementById('cam-preview');
+  const pv  = document.getElementById('pose-vid');
+  const flip = facingMode === 'user' ? 'scaleX(-1)' : 'none';
+  vid.style.transform = flip;
+  // pose-vid is hidden but also flip for consistent landmarks
+  pv.style.transform  = flip;
+}
 
 /* ════════════════════════════════════
    SPLASH
@@ -339,11 +343,12 @@ async function startXR(){
   let camOK=false;
   try{
     activeStream=await navigator.mediaDevices.getUserMedia(
-      {video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},audio:false});
+      {video:{facingMode:'user',width:{ideal:320},height:{ideal:240}},audio:false}); /* FIX 2: lower res = less latency */
     const pv=document.getElementById('pose-vid');
     pv.srcObject=activeStream;
     await new Promise(r=>pv.onloadedmetadata=r);
     document.getElementById('cam-preview').srcObject=activeStream;
+    updateVideoMirror(); /* apply mirror on start */
     camOK=true;
   }catch(e){console.warn('Camera:',e.name);}
 
@@ -351,11 +356,25 @@ async function startXR(){
     document.getElementById('load-msg').textContent='Loading pose model…';
     try{
       const pose=new Pose({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/${f}`});
-      pose.setOptions({modelComplexity:1,smoothLandmarks:true,enableSegmentation:false,
-        minDetectionConfidence:.5,minTrackingConfidence:.5});
+      pose.setOptions({
+        modelComplexity:0,          /* FIX 2: 0 = lite model, much less latency */
+        smoothLandmarks:true,
+        enableSegmentation:false,
+        minDetectionConfidence:.5,
+        minTrackingConfidence:.5
+      });
       pose.onResults(r=>{poseResults=r;});
       const pv=document.getElementById('pose-vid');
-      const cam=new Camera(pv,{onFrame:async()=>{await pose.send({image:pv});},width:640,height:480});
+
+      /* FIX 2: frame skip — only send every other frame to pose model */
+      let frameCount=0;
+      const cam=new Camera(pv,{
+        onFrame:async()=>{
+          frameCount++;
+          if(frameCount%2===0) await pose.send({image:pv}); /* skip odd frames */
+        },
+        width:320,height:240        /* FIX 2: lower res for faster inference */
+      });
       await cam.start();
       cameraMode=true;
       document.getElementById('cam-win').style.display='flex';
@@ -379,7 +398,6 @@ async function startXR(){
   document.getElementById('bottom-row').style.display='flex';
   updateTopBar();
 
-  // FX pills
   document.querySelectorAll('.fx-pill').forEach(b=>{
     b.addEventListener('click',()=>{
       FX=b.dataset.fx;
@@ -394,7 +412,6 @@ async function startXR(){
   requestAnimationFrame(loop);
 }
 
-/* top-bar text */
 function updateTopBar(){
   const modeLabels={wall:'WALL · HANDS',floor:'MOVE ON THE FLOOR'};
   document.getElementById('pill-mode-txt').textContent=modeLabels[PROJ_MODE]||PROJ_MODE.toUpperCase();
@@ -411,7 +428,6 @@ function toggleCamWin(){
 function toggleFeed(){showFeed=!showFeed;document.getElementById('sp-feed').classList.toggle('on',showFeed);}
 function toggleSkel(){showSkel=!showSkel;document.getElementById('sp-skel').classList.toggle('on',showSkel);}
 function toggleCamFeed(){
-  // pill-cam toggles ghosted feed
   showFeed=!showFeed;
   document.getElementById('sp-feed').classList.toggle('on',showFeed);
   document.getElementById('pill-cam').classList.toggle('active-pill',showFeed);
@@ -427,24 +443,42 @@ function cycleProj(){
   document.getElementById('sp-proj').classList.toggle('on',projMode>0);
 }
 function triggerDoubleTap(){
-  // burst at random positions to demo effect
   for(let i=0;i<4;i++){
     setTimeout(()=>spawnAt('burst'+i,rand(W*.2,W*.8),rand(H*.2,H*.7),true),i*80);
   }
 }
 
+/* FIX 1: switchCam — properly handle back/front mirror and stream */
 async function switchCam(){
-  facingMode=facingMode==='user'?'environment':'user';
-  if(!activeStream)return;
+  facingMode = facingMode==='user' ? 'environment' : 'user';
+  if(!activeStream) return;
+
+  /* stop old tracks */
   activeStream.getTracks().forEach(t=>t.stop());
+
   try{
-    activeStream=await navigator.mediaDevices.getUserMedia(
-      {video:{facingMode,width:{ideal:640},height:{ideal:480}},audio:false});
-    document.getElementById('cam-preview').srcObject=activeStream;
-    document.getElementById('pose-vid').srcObject=activeStream;
-    document.getElementById('cam-win-status').textContent=
-      facingMode==='user'?'Front camera':'Back camera';
-  }catch(e){console.warn('Switch cam:',e);}
+    /* FIX 2: keep low resolution for back cam too */
+    activeStream = await navigator.mediaDevices.getUserMedia(
+      {video:{facingMode, width:{ideal:320}, height:{ideal:240}}, audio:false});
+
+    const preview = document.getElementById('cam-preview');
+    const pv      = document.getElementById('pose-vid');
+    preview.srcObject = activeStream;
+    pv.srcObject      = activeStream;
+
+    /* FIX 1: apply mirror — front cam mirrors, back cam shows real orientation */
+    updateVideoMirror();
+
+    const label = facingMode==='user' ? '📷 Front cam' : '📷 Back cam';
+    document.getElementById('cam-win-status').textContent = label;
+    document.getElementById('btn-switch-cam').title =
+      facingMode==='user' ? 'Switch to back camera' : 'Switch to front camera';
+  }catch(e){
+    console.warn('Switch cam failed:',e);
+    /* revert facingMode if switch failed (e.g. only one camera) */
+    facingMode = facingMode==='user' ? 'environment' : 'user';
+    document.getElementById('cam-win-status').textContent = '⚠ Camera switch failed';
+  }
 }
 
 /* ════════════════════════════════════
@@ -749,23 +783,19 @@ function loop(){
   if(!started){requestAnimationFrame(loop);return;}
   fc++;
 
-  /* bg */
   if(projMode===2){ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);}
   else{
     const fade=FX==='galaxy'?.12:FX==='ink'?.07:FX==='sand'?.4:FX==='lightning'?.5:FX==='water'?.3:.32;
     ctx.fillStyle=`rgba(0,0,0,${fade})`;ctx.fillRect(0,0,W,H);
   }
 
-  /* projector mirror mode */
   if(projMode===1){ctx.save();ctx.translate(W,0);ctx.scale(-1,1);}
 
-  /* ghosted cam feed */
   const pv=document.getElementById('pose-vid');
   if(showFeed&&cameraMode&&pv.readyState>=2){
     ctx.save();ctx.globalAlpha=.16;ctx.translate(W,0);ctx.scale(-1,1);ctx.drawImage(pv,0,0,W,H);ctx.restore();
   }
 
-  /* body track → spawn */
   let det=false;
   if(cameraMode&&poseResults?.poseLandmarks){
     const lms=poseResults.poseLandmarks;det=true;
@@ -783,7 +813,6 @@ function loop(){
 
   if(projMode===1)ctx.restore();
 
-  /* draw particles */
   if(FX==='firework')drawFW();
   else if(FX==='ripple')drawRipple();
   else if(FX==='galaxy')drawGalaxy();
@@ -794,7 +823,6 @@ function loop(){
   else if(FX==='water')drawWater();
   else if(FX==='autumn')drawAutumn();
 
-  /* status updates */
   if(fc%30===0){
     const st=cameraMode?(det?'Body detected ✦':'Scanning…'):(det?'Touch active ✦':'Move to interact');
     document.getElementById('status-text').textContent=st;
