@@ -239,9 +239,28 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;
     </div>
   </div>
 
+  <!-- file:// warning — shown automatically if needed -->
+  <div id="file-warning" style="display:none;background:rgba(255,160,0,.1);border:1px solid rgba(255,160,0,.3);border-radius:12px;padding:14px 18px;max-width:380px;width:100%;text-align:center;">
+    <p style="color:rgba(255,200,80,.9);font-size:12px;line-height:2;">
+      ⚠️ <b style="color:#fff">You are opening this as a file://</b><br>
+      Browsers block camera on <code style="background:rgba(255,255,255,.1);padding:1px 5px;border-radius:4px">file://</code> for security.<br>
+      <b style="color:#fff">Fix — run one of these in terminal:</b><br>
+      <code style="background:rgba(0,0,0,.4);padding:3px 8px;border-radius:5px;font-size:11px">npx serve .</code> &nbsp;→&nbsp; open <code style="background:rgba(0,0,0,.4);padding:3px 8px;border-radius:5px;font-size:11px">http://localhost:3000</code><br>
+      <code style="background:rgba(0,0,0,.4);padding:3px 8px;border-radius:5px;font-size:11px">python -m http.server 8080</code> &nbsp;→&nbsp; open <code style="background:rgba(0,0,0,.4);padding:3px 8px;border-radius:5px;font-size:11px">http://localhost:8080</code>
+    </p>
+  </div>
+
+  <!-- camera permission area -->
   <div id="cam-select-wrap">
     <label>Camera Select</label>
-    <select id="cam-select"><option value="">Loading cameras…</option></select>
+    <!-- Grant permission button — shown when permission not yet given -->
+    <button id="grant-cam-btn" onclick="grantCamera()" style="
+      padding:10px 24px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);
+      color:#fff;font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+      cursor:pointer;border-radius:10px;transition:all .25s;width:100%;
+    ">📷 Grant Camera Access</button>
+    <!-- Dropdown — shown after permission granted -->
+    <select id="cam-select" style="display:none"><option value="__any__">🎥 Any available camera</option></select>
   </div>
 
   <button id="start-btn" onclick="beginCalib()">Start &amp; Calibrate</button>
@@ -278,14 +297,13 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;
   <div class="fx-p" data-fx="sand"><span class="fx-dot" style="background:#ffc840"></span>Sand</div>
   <div class="fx-p" data-fx="lightning"><span class="fx-dot" style="background:#80cfff"></span>Lightning</div>
   <div class="fx-p" data-fx="ink"><span class="fx-dot" style="background:#ff6eb0"></span>Ink</div>
-  <div class="fx-p" data-fx="leaves"><span class="fx-dot" style="background:#4ade80"></span>Leaves</div>
-  <div class="fx-p" data-fx="water"><span class="fx-dot" style="background:#38bdf8"></span>Water</div>
-  <div class="fx-p" data-fx="aurora"><span class="fx-dot" style="background:#a78bfa"></span>Aurora</div>
+
 </div>
 
 <!-- ══ BOTTOM CONTROLS ══ -->
 <div id="btm">
   <div class="bpill on"  id="bp-dbgwin" onclick="toggleDbg()">📷 Preview</div>
+  <div class="bpill"     id="bp-switchcam" onclick="switchCam()">⟳ Switch Cam</div>
   <div class="bpill"     id="bp-mask"   onclick="toggleMask()">🎭 Mask</div>
   <div class="bpill"     id="bp-trail"  onclick="toggleTrail()">〰 Trails</div>
   <div class="bpill"     id="bp-multi"  onclick="toggleMulti()">👥 Multi Blob</div>
@@ -297,6 +315,7 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;
   <div id="dbg-hdr">
     <span class="dot dot-green" style="width:6px;height:6px;border-radius:50%;flex-shrink:0;"></span>
     CAMERA FEED
+    <span onclick="switchCam()" title="Switch Camera" style="margin-left:auto;cursor:pointer;font-size:13px;padding:2px 6px;border-radius:8px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);transition:all .2s;" onmouseover="this.style.background='rgba(255,255,255,.18)'" onmouseout="this.style.background='rgba(255,255,255,.08)'">⟳</span>
   </div>
   <div id="dbg-tabs">
     <div class="dtab on" onclick="dbgTab('cam')">Camera</div>
@@ -356,48 +375,127 @@ let blobs = [];               // [{x,y,r,vx,vy}] detected movement blobs
    — Permission pehle maango, fir list karo
    — deviceId:exact nahi use karte (source busy error fix)
 ════════════════════════════════════════ */
-let camDevices = []; // globally store karo
+let camDevices = [];
+let currentCamIndex = 0;
 
-async function enumCams(){
-  const sel = document.getElementById('cam-select');
-  sel.innerHTML = '<option value="">Requesting permission…</option>';
+/* ── Detect file:// and warn immediately ── */
+(function checkProtocol(){
+  if(location.protocol === 'file:'){
+    document.getElementById('file-warning').style.display = 'block';
+    document.getElementById('grant-cam-btn').textContent = '📷 Try Camera Anyway';
+  }
+})();
 
-  try{
-    // Step 1: permission lo — bina kisi constraint ke
+/* ── User clicks "Grant Camera Access" ── */
+async function grantCamera(){
+  const btn = document.getElementById('grant-cam-btn');
+  btn.textContent = 'Requesting…';
+  btn.style.opacity = '.6';
+  btn.style.pointerEvents = 'none';
+
+  try {
+    // Ask for permission — this triggers the browser popup
     const tmp = await navigator.mediaDevices.getUserMedia({video:true, audio:false});
-    tmp.getTracks().forEach(t=>t.stop()); // immediately band karo
+    tmp.getTracks().forEach(t => t.stop());
 
-    // Step 2: ab devices list milegi with labels
+    // Now enumerate with proper labels
     const devs = await navigator.mediaDevices.enumerateDevices();
-    camDevices  = devs.filter(d=>d.kind==='videoinput');
+    camDevices = devs.filter(d => d.kind === 'videoinput');
 
+    const sel = document.getElementById('cam-select');
     sel.innerHTML = '';
 
-    // "Any camera" option pehle dalo — safest fallback
+    // "Any camera" default
     const anyOpt = document.createElement('option');
-    anyOpt.value = '';
+    anyOpt.value = '__any__';
     anyOpt.textContent = '🎥 Any available camera';
     sel.appendChild(anyOpt);
 
-    camDevices.forEach((c,i)=>{
+    camDevices.forEach((c, i) => {
       const o = document.createElement('option');
       o.value = c.deviceId;
-      o.textContent = c.label || `Camera ${i+1}`;
+      let label = c.label || `Camera ${i+1}`;
+      if(label.toLowerCase().includes('front') || label.toLowerCase().includes('user'))
+        label = '📱 Front — ' + label;
+      else if(label.toLowerCase().includes('back') || label.toLowerCase().includes('rear') || label.toLowerCase().includes('environment'))
+        label = '📷 Back — ' + label;
+      o.textContent = label;
       sel.appendChild(o);
     });
 
-    if(camDevices.length === 0){
-      sel.innerHTML='<option value="">No camera found — check browser settings</option>';
+    // Show dropdown, hide button
+    btn.style.display = 'none';
+    sel.style.display = 'block';
+
+    // Hide file warning if it was shown — permission worked despite file://
+    document.getElementById('file-warning').style.display = 'none';
+
+    // Enable Start button if projType already chosen
+    if(projType) document.getElementById('start-btn').classList.add('rdy');
+
+  } catch(e) {
+    btn.style.opacity = '1';
+    btn.style.pointerEvents = 'all';
+
+    let errMsg = '';
+    if(e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError'){
+      if(location.protocol === 'file:'){
+        errMsg = 'Camera blocked on file:// — you MUST use localhost (see yellow box above)';
+      } else {
+        errMsg = 'Permission denied — click the camera icon in your browser address bar and allow access, then click again';
+      }
+    } else if(e.name === 'NotFoundError'){
+      errMsg = 'No camera found on this device';
+    } else if(e.name === 'NotReadableError'){
+      errMsg = 'Camera is in use by another app — close it and try again';
+    } else {
+      errMsg = e.name + ': ' + e.message;
     }
 
-  }catch(e){
-    // Permission denied — retry button dikhao
-    sel.innerHTML='<option value="">⚠ Permission denied — click below</option>';
-    const retryBtn = document.getElementById('cam-retry-btn');
-    if(retryBtn) retryBtn.style.display='block';
+    btn.textContent = '⚠ ' + errMsg;
+    btn.style.background = 'rgba(255,60,60,.12)';
+    btn.style.borderColor = 'rgba(255,80,80,.4)';
+    btn.style.color = 'rgba(255,150,150,.9)';
+    btn.style.letterSpacing = '.05em';
+    btn.style.textTransform = 'none';
+    btn.style.fontSize = '11px';
+    btn.style.cursor = 'default';
+
+    // Keep file:// warning visible
+    if(location.protocol === 'file:'){
+      document.getElementById('file-warning').style.display = 'block';
+    }
   }
 }
-enumCams();
+
+// Auto-attempt only if already on localhost/https (permission likely already granted)
+(async function autoEnum(){
+  if(location.protocol === 'file:') return; // never auto on file://
+  try {
+    const devs = await navigator.mediaDevices.enumerateDevices();
+    const cams = devs.filter(d => d.kind === 'videoinput');
+    // If labels are available, permission was already granted — populate immediately
+    if(cams.length > 0 && cams[0].label){
+      camDevices = cams;
+      const sel = document.getElementById('cam-select');
+      sel.innerHTML = '';
+      const anyOpt = document.createElement('option');
+      anyOpt.value='__any__'; anyOpt.textContent='🎥 Any available camera';
+      sel.appendChild(anyOpt);
+      cams.forEach((c,i)=>{
+        const o=document.createElement('option');
+        o.value=c.deviceId;
+        let label=c.label||`Camera ${i+1}`;
+        if(label.toLowerCase().includes('front')||label.toLowerCase().includes('user')) label='📱 Front — '+label;
+        else if(label.toLowerCase().includes('back')||label.toLowerCase().includes('rear')||label.toLowerCase().includes('environment')) label='📷 Back — '+label;
+        o.textContent=label; sel.appendChild(o);
+      });
+      document.getElementById('grant-cam-btn').style.display='none';
+      sel.style.display='block';
+    }
+    // else: labels are empty — user hasn't granted yet, show button
+  } catch(e){ /* silently ignore — button is already visible */ }
+})();
 
 /* ════════════════════════════════════════
    SPLASH LOGIC
@@ -406,67 +504,151 @@ function setProjType(t){
   projType = t;
   document.getElementById('sc-floor').classList.toggle('sel', t==='floor');
   document.getElementById('sc-wall').classList.toggle('sel',  t==='wall');
-  document.getElementById('start-btn').classList.add('rdy');
   document.getElementById('hud-mode').textContent = t.toUpperCase();
+  // Enable start only if camera dropdown is visible (permission granted) or grant-btn was replaced
+  const sel = document.getElementById('cam-select');
+  if(sel.style.display !== 'none'){
+    document.getElementById('start-btn').classList.add('rdy');
+  } else {
+    // Camera not yet granted — enable start anyway, beginCalib will handle it
+    document.getElementById('start-btn').classList.add('rdy');
+  }
 }
 
 /* ════════════════════════════════════════
    START + CALIBRATION
 ════════════════════════════════════════ */
-async function beginCalib(){
-  document.getElementById('splash').style.display='none';
-  document.getElementById('calib-overlay').style.display='flex';
-
-  const deviceId = document.getElementById('cam-select').value;
-
-  // FIX: deviceId:exact nahi — "ideal" use karo ya bilkul mat dalo
-  // exact = agar wo device busy ho ya missing ho → crash
-  // ideal = browser best match dhundega
-  let constraints;
-  if(deviceId){
-    constraints = {
-      video:{ deviceId:{ideal:deviceId}, width:{ideal:320}, height:{ideal:240} },
-      audio: false
-    };
-  } else {
-    // Any camera — no deviceId at all
-    constraints = {
-      video:{ width:{ideal:320}, height:{ideal:240} },
-      audio: false
-    };
+async function openCamera(deviceId){
+  // Stop old stream cleanly first
+  if(activeStream){
+    activeStream.getTracks().forEach(t=>{ t.stop(); });
+    activeStream = null;
+    // Small delay so browser releases the device
+    await new Promise(r=>setTimeout(r, 300));
   }
 
-  // Stop old stream if any
-  if(activeStream) activeStream.getTracks().forEach(t=>t.stop());
+  let constraints;
+  if(deviceId && deviceId !== '__any__'){
+    // Use exact deviceId — most reliable after permission granted
+    constraints = { video:{ deviceId:{ exact: deviceId }, width:{ideal:320}, height:{ideal:240} }, audio:false };
+  } else {
+    constraints = { video:{ width:{ideal:320}, height:{ideal:240} }, audio:false };
+  }
 
   try{
     activeStream = await navigator.mediaDevices.getUserMedia(constraints);
+    return true;
   }catch(e){
-    // Fallback: try without any video constraints
+    console.warn('Camera open failed with deviceId, trying fallback:', e.name, e.message);
+    // Fallback: no constraints at all
     try{
       activeStream = await navigator.mediaDevices.getUserMedia({video:true, audio:false});
+      return true;
     }catch(e2){
-      document.getElementById('calib-overlay').style.display='none';
-      document.getElementById('splash').style.display='flex';
-      showCamError(e2.message);
-      return;
+      return false;
     }
+  }
+}
+
+async function beginCalib(){
+  // If camera dropdown still hidden, attempt grant first
+  const sel = document.getElementById('cam-select');
+  if(sel.style.display === 'none'){
+    await grantCamera();
+    if(document.getElementById('cam-select').style.display === 'none') return; // still no cam
+  }
+
+  document.getElementById('splash').style.display='none';
+  document.getElementById('calib-overlay').style.display='flex';
+  document.getElementById('calib-count').textContent='5';
+
+  const deviceId = document.getElementById('cam-select').value;
+
+  const ok = await openCamera(deviceId);
+  if(!ok){
+    document.getElementById('calib-overlay').style.display='none';
+    document.getElementById('splash').style.display='flex';
+    showCamError('Camera could not be opened');
+    return;
   }
 
   const vid = document.getElementById('raw-video');
   vid.srcObject = activeStream;
-  await new Promise(r => { vid.onloadedmetadata=r; });
-  vid.play();
+  await new Promise(r => { vid.onloadedmetadata = r; });
+  vid.play().catch(()=>{});
 
   document.getElementById('calib-preview').srcObject = activeStream;
   startCalibCountdown();
 }
 
+/* ── Switch camera (cycles through available cameras) ── */
+async function switchCam(){
+  if(camDevices.length < 2){
+    // Try facingMode toggle if only one listed (common on mobile)
+    const track = activeStream && activeStream.getVideoTracks()[0];
+    const currentFacing = track && track.getSettings().facingMode;
+    const nextFacing = currentFacing === 'environment' ? 'user' : 'environment';
+    if(activeStream) activeStream.getTracks().forEach(t=>t.stop());
+    activeStream = null;
+    await new Promise(r=>setTimeout(r,300));
+    try{
+      activeStream = await navigator.mediaDevices.getUserMedia({
+        video:{ facingMode:{ exact: nextFacing }, width:{ideal:320}, height:{ideal:240} },
+        audio:false
+      });
+    }catch(e){
+      // exact facingMode failed, try ideal
+      try{
+        activeStream = await navigator.mediaDevices.getUserMedia({
+          video:{ facingMode: nextFacing, width:{ideal:320}, height:{ideal:240} },
+          audio:false
+        });
+      }catch(e2){
+        console.warn('switchCam facingMode failed:', e2.name);
+        return;
+      }
+    }
+  } else {
+    // Cycle through deviceId list
+    currentCamIndex = (currentCamIndex + 1) % camDevices.length;
+    const nextId = camDevices[currentCamIndex].deviceId;
+    const ok = await openCamera(nextId);
+    if(!ok){ console.warn('switchCam failed'); return; }
+  }
+
+  const vid = document.getElementById('raw-video');
+  vid.srcObject = activeStream;
+  await new Promise(r=>{ vid.onloadedmetadata = r; });
+  vid.play().catch(()=>{});
+
+  // Update debug window preview too
+  const dbgCamCanvas = document.getElementById('dbg-cam-canvas');
+  if(dbgCamCanvas) {
+    // preview will auto-update via drawImage in detectBlobs
+  }
+
+  // Recalibrate after switch — background has changed
+  recalibrate();
+}
+
 function showCamError(msg){
-  const sel = document.getElementById('cam-select');
-  sel.innerHTML=`<option value="">⚠ ${msg}</option>`;
-  const retryBtn = document.getElementById('cam-retry-btn');
-  if(retryBtn) retryBtn.style.display='block';
+  // Reuse grant-cam-btn area to show error clearly
+  const btn = document.getElementById('grant-cam-btn');
+  btn.style.display = 'block';
+  btn.textContent = '⚠ ' + msg + ' — click to retry';
+  btn.style.background = 'rgba(255,50,50,.12)';
+  btn.style.borderColor = 'rgba(255,80,80,.4)';
+  btn.style.color = 'rgba(255,150,150,.9)';
+  btn.style.opacity = '1';
+  btn.style.pointerEvents = 'all';
+  btn.style.fontSize = '11px';
+  btn.style.letterSpacing = '.05em';
+  btn.style.textTransform = 'none';
+  btn.onclick = grantCamera;
+  // show file warning if on file://
+  if(location.protocol === 'file:'){
+    document.getElementById('file-warning').style.display = 'block';
+  }
 }
 
 function startCalibCountdown(sec=5){
@@ -525,7 +707,25 @@ function recalibrate(){
   document.getElementById('dbg-win').style.display='none';
   document.getElementById('calib-overlay').style.display='flex';
   document.getElementById('calib-count').textContent='5';
-  startCalibCountdown();
+
+  // If stream already active (e.g. after switchCam), skip re-opening camera
+  if(activeStream && activeStream.active){
+    const vid = document.getElementById('raw-video');
+    if(!vid.srcObject) vid.srcObject = activeStream;
+    document.getElementById('calib-preview').srcObject = activeStream;
+    startCalibCountdown();
+  } else {
+    // Need to re-open camera
+    const deviceId = document.getElementById('cam-select').value;
+    openCamera(deviceId).then(ok=>{
+      if(!ok){ showCamError('Camera lost — please reload page'); return; }
+      const vid = document.getElementById('raw-video');
+      vid.srcObject = activeStream;
+      vid.play().catch(()=>{});
+      document.getElementById('calib-preview').srcObject = activeStream;
+      startCalibCountdown();
+    });
+  }
 }
 
 /* ════════════════════════════════════════
@@ -687,7 +887,7 @@ function adaptBackground(){
    PARTICLES
 ════════════════════════════════════════ */
 const FW_PAL=[[255,80,120],[255,40,40],[255,160,40],[255,220,40],[40,220,255],[180,80,255],[255,255,255],[80,255,180],[255,100,200],[100,200,255],[255,180,60],[200,255,100]];
-const sparks=[],circles=[],stars=[],grains=[],bolts=[],inkD=[],leaves=[],waterD=[],auroraPts=[];
+const sparks=[],circles=[],stars=[],grains=[],bolts=[],inkD=[];
 
 function addFW(x,y,big=false){
   const c1=FW_PAL[randi(0,12)],c2=FW_PAL[randi(0,12)];
@@ -816,90 +1016,24 @@ function drawInk(){
   }
 }
 
-function addLeaves(x,y){
-  for(let i=0;i<randi(10,18);i++){
-    const a=rand(0,Math.PI*2),sp=rand(1,5);
-    leaves.push({x:x+rand(-8,8),y:y+rand(-8,8),vx:Math.cos(a)*sp+rand(-.4,.4),vy:Math.sin(a)*sp-rand(.5,2),
-      life:1,decay:rand(.01,.02),hue:randi(80,160),size:rand(3,8),rot:rand(0,Math.PI*2),rotV:rand(-.05,.05),grav:.06});
-  }
-}
-function drawLeaves(){
-  for(let i=leaves.length-1;i>=0;i--){
-    const l=leaves[i];l.vy+=l.grav;l.vx+=rand(-.04,.04);l.x+=l.vx;l.y+=l.vy;l.rot+=l.rotV;l.life-=l.decay;
-    if(l.life<=0){leaves.splice(i,1);continue;}
-    ctx.save();ctx.translate(l.x,l.y);ctx.rotate(l.rot);ctx.globalAlpha=l.life;
-    ctx.beginPath();ctx.ellipse(0,0,l.size*.55,l.size,0,0,Math.PI*2);
-    ctx.fillStyle=`hsl(${l.hue},80%,50%)`;ctx.fill();ctx.restore();
-  }
-  ctx.globalAlpha=1;
-}
-
-function addWater(x,y){
-  for(let i=0;i<randi(15,30);i++){
-    const a=rand(-Math.PI,0),sp=rand(1,7);
-    waterD.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,decay:rand(.012,.025),size:rand(1,4),grav:.12,hue:randi(190,230)});
-  }
-}
-function drawWater(){
-  ctx.globalCompositeOperation='lighter';
-  for(let i=waterD.length-1;i>=0;i--){
-    const d=waterD[i];d.vy+=d.grav;d.vx*=.98;d.x+=d.vx;d.y+=d.vy;d.life-=d.decay;
-    if(d.life<=0||d.y>H+20){waterD.splice(i,1);continue;}
-    const g=ctx.createRadialGradient(d.x,d.y,0,d.x,d.y,d.size*2);
-    g.addColorStop(0,`hsla(${d.hue},100%,85%,${(d.life*.9).toFixed(2)})`);
-    g.addColorStop(1,`hsla(${d.hue},100%,60%,0)`);
-    ctx.beginPath();ctx.arc(d.x,d.y,d.size*2,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
-  }
-  ctx.globalCompositeOperation='source-over';
-}
-
-/* Aurora — naya FX, floor pe perfect dikhta hai */
-function addAurora(x,y){
-  const h=randi(160,300);
-  for(let i=0;i<randi(20,40);i++){
-    auroraPts.push({
-      x:x+rand(-40,40),y,
-      vx:rand(-1.5,1.5),vy:rand(-3,-0.5),
-      life:1,decay:rand(.006,.014),
-      hue:h+rand(-30,30),sat:rand(80,100),lit:rand(60,85),
-      size:rand(8,24),
-    });
-  }
-}
-function drawAurora(){
-  ctx.globalCompositeOperation='lighter';
-  for(let i=auroraPts.length-1;i>=0;i--){
-    const p=auroraPts[i];
-    p.x+=p.vx;p.y+=p.vy;p.vx+=rand(-.05,.05);
-    p.life-=p.decay;p.size+=rand(-.1,.3);
-    if(p.life<=0||p.size<=0){auroraPts.splice(i,1);continue;}
-    const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.size);
-    g.addColorStop(0,`hsla(${p.hue},${p.sat}%,${p.lit}%,${(p.life*.5).toFixed(2)})`);
-    g.addColorStop(1,`hsla(${p.hue},${p.sat}%,${p.lit}%,0)`);
-    ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
-  }
-  ctx.globalCompositeOperation='source-over';
-}
+/* aurora/leaves/water removed */
 
 /* ════════════════════════════════════════
    SPAWN THROTTLE
 ════════════════════════════════════════ */
 const spawnCD={};
-const CD={firework:120,ripple:150,galaxy:400,sand:60,lightning:220,ink:55,leaves:85,water:65,aurora:40};
+const CD={firework:120,ripple:150,galaxy:400,sand:60,lightning:220,ink:55};
 
 function spawnFX(id,x,y){
   const now=Date.now();
   if(now-(spawnCD[id]||0)<(CD[FX]||100)) return;
   spawnCD[id]=now;
   if(FX==='firework') addFW(x,y);
-  else if(FX==='ripple')   addRipple(x,y);
-  else if(FX==='galaxy')   addGalaxy(x,y);
-  else if(FX==='sand')     addSand(x,y);
-  else if(FX==='lightning')addLightning(x,y);
-  else if(FX==='ink')      addInk(x,y);
-  else if(FX==='leaves')   addLeaves(x,y);
-  else if(FX==='water')    addWater(x,y);
-  else if(FX==='aurora')   addAurora(x,y);
+  else if(FX==='ripple')    addRipple(x,y);
+  else if(FX==='galaxy')    addGalaxy(x,y);
+  else if(FX==='sand')      addSand(x,y);
+  else if(FX==='lightning') addLightning(x,y);
+  else if(FX==='ink')       addInk(x,y);
 }
 
 /* ════════════════════════════════════════
@@ -928,7 +1062,7 @@ function mainLoop(){
   frameCount++;
 
   /* Background fade */
-  const fade = FX==='galaxy'?.1:FX==='ink'?.07:FX==='aurora'?.15:.28;
+  const fade = FX==='galaxy'?.1:FX==='ink'?.07:.28;
   if(showTrails){
     ctx.fillStyle=`rgba(0,0,0,${fade})`;
     ctx.fillRect(0,0,W,H);
@@ -962,9 +1096,6 @@ function mainLoop(){
   else if(FX==='sand')      drawSand();
   else if(FX==='lightning') drawLightning();
   else if(FX==='ink')       drawInk();
-  else if(FX==='leaves')    drawLeaves();
-  else if(FX==='water')     drawWater();
-  else if(FX==='aurora')    drawAurora();
 
   /* Adaptive background update every 5s */
   if(Date.now()-bgAdaptTimer > BG_ADAPT_INTERVAL){
