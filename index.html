@@ -6,132 +6,79 @@
 <title>Floor Projection</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-html,body{width:100%;height:100%;background:#000;overflow:hidden;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;}
+html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,sans-serif;}
 #proj-canvas{position:fixed;inset:0;width:100%;height:100%;display:block;}
 #raw-video{position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;}
 
-/* ── SPLASH ── */
-#splash{position:fixed;inset:0;z-index:80;background:#000;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:18px;padding:24px;}
-#splash h1{color:#fff;font-weight:100;font-size:clamp(20px,5vw,32px);
-  letter-spacing:.5em;text-transform:uppercase;text-align:center;}
-#splash-sub{color:rgba(255,255,255,.22);font-size:12px;letter-spacing:.2em;
-  text-transform:uppercase;text-align:center;}
+/* SPLASH */
+#splash{position:fixed;inset:0;z-index:80;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;}
+#splash h1{color:#fff;font-weight:100;font-size:clamp(20px,5vw,32px);letter-spacing:.5em;text-transform:uppercase;text-align:center;}
+#splash-sub{color:rgba(255,255,255,.22);font-size:12px;letter-spacing:.2em;text-transform:uppercase;text-align:center;}
 .splash-cards{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;max-width:440px;width:100%;}
-.scard{flex:1;min-width:130px;max-width:190px;border:1px solid rgba(255,255,255,.1);
-  border-radius:14px;padding:18px 14px;cursor:pointer;text-align:center;
-  background:rgba(255,255,255,.02);transition:border-color .2s,background .2s;}
+.scard{flex:1;min-width:130px;max-width:190px;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:18px 14px;cursor:pointer;text-align:center;background:rgba(255,255,255,.02);transition:border-color .2s,background .2s;}
 .scard:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.3);}
 .scard.sel{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.6);}
 .scard-icon{font-size:28px;margin-bottom:8px;}
-.scard h3{color:#fff;font-weight:300;font-size:11px;letter-spacing:.18em;
-  text-transform:uppercase;margin-bottom:5px;}
+.scard h3{color:#fff;font-weight:300;font-size:11px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:5px;}
 .scard p{color:rgba(255,255,255,.28);font-size:10px;line-height:1.7;}
-/* file warning */
-#file-warn{display:none;background:rgba(255,150,0,.1);border:1px solid rgba(255,160,0,.3);
-  border-radius:10px;padding:12px 16px;max-width:340px;width:100%;text-align:center;}
+#file-warn{display:none;background:rgba(255,150,0,.1);border:1px solid rgba(255,160,0,.3);border-radius:10px;padding:12px 16px;max-width:340px;width:100%;text-align:center;}
 #file-warn p{color:rgba(255,200,80,.88);font-size:11px;line-height:1.9;}
 #file-warn code{background:rgba(0,0,0,.4);padding:1px 5px;border-radius:3px;font-size:10px;color:#fff;}
-/* cam section */
 #cam-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;max-width:300px;}
 #cam-wrap label{color:rgba(255,255,255,.28);font-size:10px;letter-spacing:.15em;text-transform:uppercase;}
-#grant-btn{width:100%;padding:10px 20px;border:1px solid rgba(255,255,255,.22);
-  background:rgba(255,255,255,.04);color:rgba(255,255,255,.7);font-size:11px;
-  letter-spacing:.18em;text-transform:uppercase;cursor:pointer;border-radius:10px;transition:all .2s;}
+#grant-btn{width:100%;padding:10px 20px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.04);color:rgba(255,255,255,.7);font-size:11px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;border-radius:10px;transition:all .2s;}
 #grant-btn:hover{background:rgba(255,255,255,.08);color:#fff;}
-#cam-sel{display:none;width:100%;background:rgba(255,255,255,.04);
-  border:1px solid rgba(255,255,255,.14);border-radius:10px;
-  color:#fff;font-size:12px;padding:10px 12px;outline:none;-webkit-appearance:none;}
+#cam-sel{display:none;width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.14);border-radius:10px;color:#fff;font-size:12px;padding:10px 12px;outline:none;-webkit-appearance:none;}
 #cam-sel option{background:#111;}
-#start-btn{padding:12px 48px;border:1px solid rgba(255,255,255,.28);
-  background:transparent;color:#fff;font-size:11px;letter-spacing:.28em;
-  text-transform:uppercase;cursor:pointer;border-radius:40px;transition:all .2s;
-  opacity:.3;pointer-events:none;}
+#start-btn{padding:12px 48px;border:1px solid rgba(255,255,255,.28);background:transparent;color:#fff;font-size:11px;letter-spacing:.28em;text-transform:uppercase;cursor:pointer;border-radius:40px;transition:all .2s;opacity:.3;pointer-events:none;}
 #start-btn.rdy{opacity:1;pointer-events:all;}
 #start-btn.rdy:hover{background:rgba(255,255,255,.07);}
 
-/* ── CALIBRATION ── */
-#calib{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.94);
-  display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
+/* CALIBRATION */
+#calib{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.94);display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
 #calib h2{color:#fff;font-weight:200;font-size:16px;letter-spacing:.22em;text-transform:uppercase;}
 #calib p{color:rgba(255,255,255,.32);font-size:11px;letter-spacing:.1em;text-align:center;max-width:300px;line-height:1.9;}
-#calib-timer{width:72px;height:72px;border-radius:50%;border:2px solid rgba(255,255,255,.1);
-  display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;
-  font-weight:100;position:relative;}
-#calib-ring{position:absolute;inset:-2px;border-radius:50%;
-  border:2px solid transparent;border-top-color:#fff;animation:spin 1s linear infinite;}
+#calib-timer{width:72px;height:72px;border-radius:50%;border:2px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;font-weight:100;position:relative;}
+#calib-ring{position:absolute;inset:-2px;border-radius:50%;border:2px solid transparent;border-top-color:#fff;animation:spin 1s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
-#calib-vid{width:200px;height:150px;border-radius:10px;object-fit:cover;
-  border:1px solid rgba(255,255,255,.1);transform:scaleX(-1);}
-.cbtn{padding:9px 28px;border:1px solid rgba(255,255,255,.22);background:transparent;
-  color:rgba(255,255,255,.6);font-size:10px;letter-spacing:.2em;text-transform:uppercase;
-  cursor:pointer;border-radius:28px;transition:all .2s;}
+#calib-vid{width:200px;height:150px;border-radius:10px;object-fit:cover;border:1px solid rgba(255,255,255,.1);transform:scaleX(-1);}
+.cbtn{padding:9px 28px;border:1px solid rgba(255,255,255,.22);background:transparent;color:rgba(255,255,255,.6);font-size:10px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;border-radius:28px;transition:all .2s;}
 .cbtn:hover{background:rgba(255,255,255,.07);color:#fff;}
-.back-btn{display:flex;align-items:center;gap:6px;padding:7px 16px;
-  border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);
-  color:rgba(255,255,255,.45);font-size:10px;letter-spacing:.15em;text-transform:uppercase;
-  cursor:pointer;border-radius:22px;transition:all .2s;}
+.back-btn{display:flex;align-items:center;gap:6px;padding:7px 16px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);color:rgba(255,255,255,.45);font-size:10px;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;border-radius:22px;transition:all .2s;}
 .back-btn:hover{background:rgba(255,255,255,.09);color:rgba(255,255,255,.8);border-color:rgba(255,255,255,.3);}
 .back-btn svg{opacity:.5;flex-shrink:0;}
 
-/* ── HUD ── */
-#hud{position:fixed;top:12px;left:12px;right:12px;z-index:30;
-  display:none;align-items:center;gap:7px;pointer-events:none;}
-.hp{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:22px;
-  background:rgba(8,8,8,.9);border:1px solid rgba(255,255,255,.1);
-  font-size:10px;letter-spacing:.13em;text-transform:uppercase;
-  color:rgba(255,255,255,.42);white-space:nowrap;pointer-events:all;cursor:pointer;}
+/* HUD */
+#hud{position:fixed;top:12px;left:12px;right:12px;z-index:30;display:none;align-items:center;gap:7px;pointer-events:none;}
+.hp{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:22px;background:rgba(8,8,8,.9);border:1px solid rgba(255,255,255,.1);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:rgba(255,255,255,.42);white-space:nowrap;pointer-events:all;cursor:pointer;}
 .hp:hover{border-color:rgba(255,255,255,.28);color:#fff;}
 .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 .g{background:#22c55e;box-shadow:0 0 5px #22c55e;}
 .y{background:#facc15;box-shadow:0 0 5px #facc15;}
-#hud-st{margin-left:auto;font-size:10px;color:rgba(255,255,255,.18);
-  letter-spacing:.1em;pointer-events:none;}
+#hud-st{margin-left:auto;font-size:10px;color:rgba(255,255,255,.18);letter-spacing:.1em;pointer-events:none;}
 
-/* ── FX BAR ── */
-#fx-bar{position:fixed;bottom:74px;left:0;right:0;z-index:30;
-  display:none;gap:5px;padding:0 14px;justify-content:center;
-  overflow-x:auto;scrollbar-width:none;}
+/* FX BAR */
+#fx-bar{position:fixed;bottom:74px;left:0;right:0;z-index:30;display:none;gap:5px;padding:0 14px;justify-content:center;overflow-x:auto;scrollbar-width:none;}
 #fx-bar::-webkit-scrollbar{display:none;}
-.fp{display:flex;align-items:center;gap:5px;flex-shrink:0;
-  padding:6px 12px;border-radius:26px;
-  background:rgba(8,8,8,.9);border:1px solid rgba(255,255,255,.1);
-  cursor:pointer;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
-  color:rgba(255,255,255,.35);transition:color .15s,border-color .15s,background .15s;}
+.fp{display:flex;align-items:center;gap:5px;flex-shrink:0;padding:6px 12px;border-radius:26px;background:rgba(8,8,8,.9);border:1px solid rgba(255,255,255,.1);cursor:pointer;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.35);transition:color .15s,border-color .15s,background .15s;}
 .fp:hover{color:rgba(255,255,255,.7);border-color:rgba(255,255,255,.28);}
 .fp.on{background:rgba(255,255,255,.11);color:#fff;border-color:rgba(255,255,255,.55);}
 .fd{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
 
-/* ── BOTTOM BAR ── */
-#btm{position:fixed;bottom:18px;left:0;right:0;z-index:30;
-  display:none;gap:6px;align-items:center;justify-content:center;
-  flex-wrap:wrap;padding:0 14px;}
-.bp{padding:6px 13px;border-radius:22px;
-  background:rgba(8,8,8,.9);border:1px solid rgba(255,255,255,.1);
-  cursor:pointer;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
-  color:rgba(255,255,255,.35);transition:color .15s,border-color .15s,background .15s;}
+/* BOTTOM BAR */
+#btm{position:fixed;bottom:18px;left:0;right:0;z-index:30;display:none;gap:6px;align-items:center;justify-content:center;flex-wrap:wrap;padding:0 14px;}
+.bp{padding:6px 13px;border-radius:22px;background:rgba(8,8,8,.9);border:1px solid rgba(255,255,255,.1);cursor:pointer;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.35);transition:color .15s,border-color .15s,background .15s;}
 .bp:hover{color:rgba(255,255,255,.7);}
 .bp.on{background:rgba(255,255,255,.09);color:rgba(255,255,255,.8);border-color:rgba(255,255,255,.38);}
 
-/* ── CAM WINDOW ── */
-#cam-win{position:fixed;bottom:118px;right:12px;z-index:40;
-  width:clamp(150px,26vw,210px);border-radius:12px;overflow:hidden;
-  background:rgba(6,6,6,.96);border:1px solid rgba(255,255,255,.11);
-  display:none;flex-direction:column;touch-action:none;}
-#cw-hdr{padding:6px 9px;background:rgba(0,0,0,.7);
-  border-bottom:1px solid rgba(255,255,255,.07);
-  font-size:9px;letter-spacing:.14em;text-transform:uppercase;
-  color:rgba(255,255,255,.45);cursor:grab;user-select:none;
-  display:flex;align-items:center;gap:6px;}
+/* CAM WINDOW */
+#cam-win{position:fixed;bottom:118px;right:12px;z-index:40;width:clamp(150px,26vw,210px);border-radius:12px;overflow:hidden;background:rgba(6,6,6,.96);border:1px solid rgba(255,255,255,.11);display:none;flex-direction:column;touch-action:none;}
+#cw-hdr{padding:6px 9px;background:rgba(0,0,0,.7);border-bottom:1px solid rgba(255,255,255,.07);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45);cursor:grab;user-select:none;display:flex;align-items:center;gap:6px;}
 #cw-hdr:active{cursor:grabbing;}
-#cw-switch{margin-left:auto;cursor:pointer;padding:2px 6px;border-radius:6px;
-  background:rgba(255,255,255,.07);font-size:12px;transition:background .2s;}
+#cw-switch{margin-left:auto;cursor:pointer;padding:2px 6px;border-radius:6px;background:rgba(255,255,255,.07);font-size:12px;transition:background .2s;}
 #cw-switch:hover{background:rgba(255,255,255,.15);}
 #cw-canvas{width:100%;display:block;}
-#cw-st{padding:4px 8px;font-size:9px;letter-spacing:.08em;
-  color:rgba(80,220,130,.65);background:rgba(0,0,0,.6);}
+#cw-st{padding:4px 8px;font-size:9px;letter-spacing:.08em;color:rgba(80,220,130,.65);background:rgba(0,0,0,.6);}
 </style>
 </head>
 <body>
@@ -147,11 +94,11 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;
   <div class="splash-cards">
     <div class="scard" id="sc-floor" onclick="setType('floor')">
       <div class="scard-icon">⬛</div><h3>Floor</h3>
-      <p>Projector ceiling · Camera top-down · Feet tracking</p>
+      <p>Projector ceiling · Camera top-down · Full body tracking</p>
     </div>
     <div class="scard" id="sc-wall" onclick="setType('wall')">
       <div class="scard-icon">🧱</div><h3>Wall</h3>
-      <p>Projector front · Camera side · Hand tracking</p>
+      <p>Projector front · Camera side · Both hands tracking</p>
     </div>
   </div>
 
@@ -174,7 +121,7 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;
 <div id="calib">
   <h2>Calibrating</h2>
   <video id="calib-vid" autoplay muted playsinline></video>
-  <p>Stand clear of the area<br>Loading skeleton model…</p>
+  <p>Stand clear · Loading skeleton…</p>
   <div id="calib-timer">
     <div id="calib-ring"></div>
     <span id="calib-count">5</span>
@@ -196,7 +143,7 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;
   </div>
   <div class="hp" onclick="doRecalib()">
     <span class="dot y" id="hud-dot"></span>
-    <span id="hud-mode">FLOOR</span>
+    <span id="hud-mode">WALL</span>
   </div>
   <div class="hp" onclick="toggleCamWin()">📷</div>
   <div class="hp" onclick="switchCam()">⟳</div>
@@ -211,6 +158,7 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;
   <div class="fp" data-fx="sand"><span class="fd" style="background:#ffc840"></span>Sand</div>
   <div class="fp" data-fx="lightning"><span class="fd" style="background:#80cfff"></span>Lightning</div>
   <div class="fp" data-fx="ink"><span class="fd" style="background:#ff6eb0"></span>Ink</div>
+  <div class="fp" data-fx="light"><span class="fd" style="background:#ffaa00"></span>Light Paint</div>
 </div>
 
 <!-- BOTTOM BAR -->
@@ -232,75 +180,59 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;
 
 <script>
 /* ════════════ CANVAS ════════════ */
-const pc  = document.getElementById('proj-canvas');
-const ctx = pc.getContext('2d', {alpha:false});   // alpha:false = faster compositing
-let W, H;
-function resize(){ W=pc.width=innerWidth; H=pc.height=innerHeight; }
-resize(); window.addEventListener('resize', resize);
+const pc=document.getElementById('proj-canvas');
+const ctx=pc.getContext('2d',{alpha:false});
+let W,H;
+function resize(){W=pc.width=innerWidth;H=pc.height=innerHeight;}
+resize();window.addEventListener('resize',resize);
 
-const rand  = (a,b)=>a+Math.random()*(b-a);
-const randi = (a,b)=>Math.floor(rand(a,b));
+const rand=(a,b)=>a+Math.random()*(b-a);
+const randi=(a,b)=>Math.floor(rand(a,b));
 
 /* ════════════ STATE ════════════ */
-let projType    = null;
-let FX          = 'firework';
-let running     = false;
-let showTrails  = true;
-let showSkel    = true;
-let camWinVis   = true;
-let activeStream= null;
-let camDevices  = [];
-let camIdx      = 0;
-let mpHands     = null;
-let mpCam       = null;
-let handResults = null;
-let skelReady   = false;
-/* particle cap — hard limit to keep 60fps */
-const MAX_PARTICLES = 400;
+let projType=null,FX='firework',running=false,showTrails=true,showSkel=true,camWinVis=true;
+let activeStream=null,camDevices=[],camIdx=0;
+let mpHands=null,mpPose=null,mpCam=null;
+let handResults=null,poseResults=null;
+let skelReady=false;
+const MAX_PARTICLES=500;
 
-/* ════════════ PROTOCOL CHECK ════════════ */
-if(location.protocol==='file:'){
-  document.getElementById('file-warn').style.display='block';
-  document.getElementById('grant-btn').textContent='📷 Try Anyway';
-}
+/* protocol check */
+if(location.protocol==='file:') document.getElementById('file-warn').style.display='block';
 
 /* ════════════ CAMERA PERMISSION ════════════ */
-let camGranted = false;
+let camGranted=false;
 async function grantCam(){
-  const btn = document.getElementById('grant-btn');
-  btn.textContent='Requesting…';
-  btn.style.opacity='.5'; btn.style.pointerEvents='none';
+  const btn=document.getElementById('grant-btn');
+  btn.textContent='Requesting…';btn.style.opacity='.5';btn.style.pointerEvents='none';
   try{
-    const tmp = await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+    const tmp=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
     tmp.getTracks().forEach(t=>t.stop());
-    camGranted = true;
-    const devs = await navigator.mediaDevices.enumerateDevices();
-    camDevices  = devs.filter(d=>d.kind==='videoinput');
-    const sel = document.getElementById('cam-sel');
+    camGranted=true;
+    const devs=await navigator.mediaDevices.enumerateDevices();
+    camDevices=devs.filter(d=>d.kind==='videoinput');
+    const sel=document.getElementById('cam-sel');
     sel.innerHTML='';
-    const ao=document.createElement('option'); ao.value='__any__'; ao.textContent='🎥 Any camera'; sel.appendChild(ao);
+    const ao=document.createElement('option');ao.value='__any__';ao.textContent='🎥 Any camera';sel.appendChild(ao);
     camDevices.forEach((c,i)=>{
-      const o=document.createElement('option'); o.value=c.deviceId;
+      const o=document.createElement('option');o.value=c.deviceId;
       let lbl=c.label||`Camera ${i+1}`;
-      if(/front|user/i.test(lbl)) lbl='📱 Front — '+lbl;
-      else if(/back|rear|env/i.test(lbl)) lbl='📷 Back — '+lbl;
-      o.textContent=lbl; sel.appendChild(o);
+      if(/front|user/i.test(lbl))lbl='📱 Front — '+lbl;
+      else if(/back|rear|env/i.test(lbl))lbl='📷 Back — '+lbl;
+      o.textContent=lbl;sel.appendChild(o);
     });
-    btn.style.display='none'; sel.style.display='block';
+    btn.style.display='none';sel.style.display='block';
     document.getElementById('file-warn').style.display='none';
-    if(projType) document.getElementById('start-btn').classList.add('rdy');
+    if(projType)document.getElementById('start-btn').classList.add('rdy');
   }catch(e){
-    const msgs={NotAllowedError:'Permission denied — allow camera in browser',
-      NotFoundError:'No camera found',NotReadableError:'Camera busy — close other apps'};
-    btn.textContent='⚠ '+(msgs[e.name]||e.name)+' — click retry';
-    btn.style.cssText+='opacity:1;pointer-events:all;background:rgba(255,50,50,.1);border-color:rgba(255,80,80,.35);color:rgba(255,150,150,.9);font-size:10px;letter-spacing:.04em;text-transform:none;';
-    if(location.protocol==='file:') document.getElementById('file-warn').style.display='block';
+    const msgs={NotAllowedError:'Permission denied',NotFoundError:'No camera found',NotReadableError:'Camera busy'};
+    btn.textContent='⚠ '+(msgs[e.name]||e.name);
+    btn.style.cssText+='opacity:1;pointer-events:all;background:rgba(255,50,50,.1);border-color:rgba(255,80,80,.35);color:rgba(255,150,150,.9);font-size:10px;text-transform:none;';
+    if(location.protocol==='file:')document.getElementById('file-warn').style.display='block';
   }
 }
-
-/* auto-check if permission already granted (localhost) */
 (async()=>{
-  if(location.protocol==='file:') return;
+  if(location.protocol==='file:')return;
   try{
     const d=await navigator.mediaDevices.enumerateDevices();
     const c=d.filter(x=>x.kind==='videoinput');
@@ -311,7 +243,7 @@ async function grantCam(){
       const ao=document.createElement('option');ao.value='__any__';ao.textContent='🎥 Any camera';sel.appendChild(ao);
       c.forEach((x,i)=>{const o=document.createElement('option');o.value=x.deviceId;o.textContent=x.label||`Camera ${i+1}`;sel.appendChild(o);});
       document.getElementById('grant-btn').style.display='none';
-      sel.style.display='block'; camGranted=true;
+      sel.style.display='block';camGranted=true;
     }
   }catch(_){}
 })();
@@ -319,94 +251,85 @@ async function grantCam(){
 function setType(t){
   projType=t;
   document.getElementById('sc-floor').classList.toggle('sel',t==='floor');
-  document.getElementById('sc-wall').classList.toggle('sel', t==='wall');
+  document.getElementById('sc-wall').classList.toggle('sel',t==='wall');
   document.getElementById('hud-mode').textContent=t.toUpperCase();
   document.getElementById('start-btn').classList.add('rdy');
 }
 
-/* ════════════ OPEN CAMERA ════════════ */
 async function openCam(deviceId){
-  if(activeStream){ activeStream.getTracks().forEach(t=>t.stop()); activeStream=null; await sleep(250); }
+  if(activeStream){activeStream.getTracks().forEach(t=>t.stop());activeStream=null;await sleep(250);}
   const base={width:{ideal:320},height:{ideal:240}};
   const constraints=[
-    deviceId&&deviceId!=='__any__' ? {video:{...base,deviceId:{exact:deviceId}},audio:false} : null,
+    deviceId&&deviceId!=='__any__'?{video:{...base,deviceId:{exact:deviceId}},audio:false}:null,
     {video:base,audio:false},
     {video:true,audio:false}
   ].filter(Boolean);
   for(const c of constraints){
-    try{ activeStream=await navigator.mediaDevices.getUserMedia(c); return true; }catch(_){}
+    try{activeStream=await navigator.mediaDevices.getUserMedia(c);return true;}catch(_){}
   }
   return false;
 }
-const sleep = ms=>new Promise(r=>setTimeout(r,ms));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
-/* ════════════ START ════════════ */
 async function startApp(){
-  if(!camGranted){ await grantCam(); if(!camGranted) return; }
+  if(!camGranted){await grantCam();if(!camGranted)return;}
   document.getElementById('splash').style.display='none';
   document.getElementById('calib').style.display='flex';
   document.getElementById('calib-count').textContent='5';
-  const devId = document.getElementById('cam-sel').value;
-  const ok = await openCam(devId);
-  if(!ok){ backToSplash('Camera failed'); return; }
-  const vid = document.getElementById('raw-video');
-  vid.srcObject = activeStream;
-  await new Promise(r=>{ vid.onloadedmetadata=r; });
+  const devId=document.getElementById('cam-sel').value;
+  const ok=await openCam(devId);
+  if(!ok){backToSplash('Camera failed');return;}
+  const vid=document.getElementById('raw-video');
+  vid.srcObject=activeStream;
+  await new Promise(r=>{vid.onloadedmetadata=r;});
   vid.play().catch(()=>{});
-  document.getElementById('calib-vid').srcObject = activeStream;
+  document.getElementById('calib-vid').srcObject=activeStream;
   countDown();
 }
 
 function backToSplash(msg){
   document.getElementById('calib').style.display='none';
   document.getElementById('splash').style.display='flex';
-  if(msg){ const btn=document.getElementById('grant-btn');
+  if(msg){const btn=document.getElementById('grant-btn');
     btn.style.display='block';btn.textContent='⚠ '+msg+' — retry';
-    btn.style.opacity='1';btn.style.pointerEvents='all'; }
+    btn.style.opacity='1';btn.style.pointerEvents='all';}
 }
 
 function countDown(n=5){
   const el=document.getElementById('calib-count');
   el.textContent=n;
-  if(n<=0){ captureBg(); return; }
+  if(n<=0){captureBg();return;}
   setTimeout(()=>countDown(n-1),1000);
 }
 
 function captureBg(){
-  /* no bg capture needed — using MediaPipe skeleton only */
   document.getElementById('calib').style.display='none';
   document.getElementById('hud').style.display='flex';
   document.getElementById('fx-bar').style.display='flex';
   document.getElementById('btm').style.display='flex';
   document.getElementById('cam-win').style.display='flex';
   running=true;
-  initHands();
+  initSkeleton();
   requestAnimationFrame(loop);
 }
 
-/* ── Go back to splash from calibration or main experience ── */
 function goBackToSplash(){
-  // stop everything
-  running=false; skelReady=false; handResults=null;
-  if(mpCam){ try{mpCam.stop();}catch(_){} mpCam=null; }
-  if(activeStream){ activeStream.getTracks().forEach(t=>t.stop()); activeStream=null; }
-  // hide all screens
+  running=false;skelReady=false;handResults=null;poseResults=null;
+  if(mpCam){try{mpCam.stop();}catch(_){} mpCam=null;}
+  if(activeStream){activeStream.getTracks().forEach(t=>t.stop());activeStream=null;}
   document.getElementById('calib').style.display='none';
   document.getElementById('hud').style.display='none';
   document.getElementById('fx-bar').style.display='none';
   document.getElementById('btm').style.display='none';
   document.getElementById('cam-win').style.display='none';
-  // clear canvas
-  ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
-  // clear particles
-  sparks.length=0;circles.length=0;stars.length=0;grains.length=0;bolts.length=0;inkD.length=0;
-  // show splash with current selection preserved
+  ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+  sparks.length=0;circles.length=0;stars.length=0;grains.length=0;bolts.length=0;inkD.length=0;lightTrails.length=0;
   document.getElementById('splash').style.display='flex';
 }
 
 function doRecalib(){
-  running=false; skelReady=false; handResults=null;
-  if(mpCam){ try{mpCam.stop();}catch(_){} mpCam=null; }
+  running=false;skelReady=false;handResults=null;poseResults=null;
+  if(mpCam){try{mpCam.stop();}catch(_){} mpCam=null;}
   document.getElementById('hud').style.display='none';
   document.getElementById('fx-bar').style.display='none';
   document.getElementById('btm').style.display='none';
@@ -414,205 +337,217 @@ function doRecalib(){
   document.getElementById('calib').style.display='flex';
   document.getElementById('calib-count').textContent='5';
   if(activeStream&&activeStream.active){
-    document.getElementById('calib-vid').srcObject=activeStream; countDown();
-  } else {
+    document.getElementById('calib-vid').srcObject=activeStream;countDown();
+  }else{
     const devId=document.getElementById('cam-sel').value;
     openCam(devId).then(ok=>{
-      if(!ok){ backToSplash('Camera lost'); return; }
+      if(!ok){backToSplash('Camera lost');return;}
       const vid=document.getElementById('raw-video');
-      vid.srcObject=activeStream; vid.play().catch(()=>{});
-      document.getElementById('calib-vid').srcObject=activeStream; countDown();
+      vid.srcObject=activeStream;vid.play().catch(()=>{});
+      document.getElementById('calib-vid').srcObject=activeStream;countDown();
     });
   }
 }
 
-/* ════════════ SWITCH CAM ════════════ */
 async function switchCam(){
   if(camDevices.length>=2){
     camIdx=(camIdx+1)%camDevices.length;
     const ok=await openCam(camDevices[camIdx].deviceId);
-    if(!ok) return;
-  } else {
-    /* facingMode toggle for mobile */
+    if(!ok)return;
+  }else{
     const track=activeStream&&activeStream.getVideoTracks()[0];
     const cur=track&&track.getSettings().facingMode;
     const next=cur==='environment'?'user':'environment';
     if(activeStream){activeStream.getTracks().forEach(t=>t.stop());activeStream=null;await sleep(300);}
-    try{ activeStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:next},width:{ideal:320},height:{ideal:240}},audio:false}); }
+    try{activeStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{exact:next},width:{ideal:320},height:{ideal:240}},audio:false});}
     catch(_){
-      try{ activeStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:next,width:{ideal:320},height:{ideal:240}},audio:false}); }
-      catch(e){ console.warn('switchCam failed',e); return; }
+      try{activeStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:next,width:{ideal:320},height:{ideal:240}},audio:false});}
+      catch(e){console.warn('switchCam failed',e);return;}
     }
   }
   const vid=document.getElementById('raw-video');
   vid.srcObject=activeStream;
   await new Promise(r=>{vid.onloadedmetadata=r;});
   vid.play().catch(()=>{});
-  /* restart hands on new stream */
   if(mpCam){try{mpCam.stop();}catch(_){} mpCam=null;}
-  skelReady=false; handResults=null;
-  if(running) initHands();
+  skelReady=false;handResults=null;poseResults=null;
+  if(running)initSkeleton();
 }
 
-/* ════════════ MEDIAPIPE HANDS — ACCURATE TRACKING ════════════
-   modelComplexity:1  → full model, more accurate (not lite)
-   maxNumHands:2      → both hands
-   21 landmarks per hand — all used with velocity smoothing
-   Smoothed positions → no jitter, accurate spawn points
-═══════════════════════════════════════════════════════════════ */
-const TIPS     = [4,8,12,16,20];   // thumb,index,middle,ring,pinky tips
-const MID_TIPS = [3,7,11,15,19];   // mid joints
-const KNUCKLES = [2,6,10,14,18];   // lower knuckles
-const WRIST    = 0;
-const PALM_PTS = [0,1,5,9,13,17];  // wrist + MCP joints (palm)
+/* ════════════ MEDIAPIPE HANDS + POSE ════════════ */
+const TIPS=[4,8,12,16,20];
+const MID_TIPS=[3,7,11,15,19];
+const KNUCKLES=[2,6,10,14,18];
+const WRIST=0;
+const HAND_CONN=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[0,9],[9,10],[10,11],[11,12],[0,13],[13,14],[14,15],[15,16],[0,17],[17,18],[18,19],[19,20],[5,9],[9,13],[13,17]];
 
-const HAND_CONN = [
-  [0,1],[1,2],[2,3],[3,4],
-  [0,5],[5,6],[6,7],[7,8],
-  [0,9],[9,10],[10,11],[11,12],
-  [0,13],[13,14],[14,15],[15,16],
-  [0,17],[17,18],[18,19],[19,20],
-  [5,9],[9,13],[13,17]
-];
+const POSE_LM={L_ANKLE:27,R_ANKLE:28,L_FOOT:31,R_FOOT:32,L_KNEE:25,R_KNEE:26,L_HIP:23,R_HIP:24,L_WRIST:15,R_WRIST:16,L_ELBOW:13,R_ELBOW:14};
+const POSE_CONN=[[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,24],[23,25],[25,27],[27,31],[24,26],[26,28],[28,32]];
 
-/* ── Smoothed landmark positions (exponential moving average) ── */
-const smoothed = {};   // id → {x,y}
-const SMOOTH   = 0.55; // 0=no smooth, 1=full smooth — 0.55 = good balance
-function getSmoothed(id, rawX, rawY){
-  if(!smoothed[id]){ smoothed[id]={x:rawX,y:rawY}; return smoothed[id]; }
-  smoothed[id].x = smoothed[id].x*SMOOTH + rawX*(1-SMOOTH);
-  smoothed[id].y = smoothed[id].y*SMOOTH + rawY*(1-SMOOTH);
+const smoothed={};
+const SMOOTH=0.55;
+function getSmoothed(id,rawX,rawY){
+  if(!smoothed[id]){smoothed[id]={x:rawX,y:rawY};return smoothed[id];}
+  smoothed[id].x=smoothed[id].x*SMOOTH+rawX*(1-SMOOTH);
+  smoothed[id].y=smoothed[id].y*SMOOTH+rawY*(1-SMOOTH);
   return smoothed[id];
 }
 
-async function initHands(){
+async function initSkeleton(){
   const vid=document.getElementById('raw-video');
-  if(!vid.srcObject||vid.readyState<2){ setTimeout(initHands,400); return; }
+  if(!vid.srcObject||vid.readyState<2){setTimeout(initSkeleton,400);return;}
   try{
-    mpHands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${f}`});
-    mpHands.setOptions({
-      maxNumHands:2,
-      modelComplexity:1,            // ← ACCURATE model (not lite)
-      minDetectionConfidence:0.7,   // ← higher = less false detections
-      minTrackingConfidence:0.65    // ← higher = stable tracking
-    });
-    mpHands.onResults(r=>{ handResults=r; });
-    mpCam=new Camera(vid,{
-      onFrame:async()=>{ await mpHands.send({image:vid}); },
-      width:320, height:240
-    });
+    if(projType==='wall'){
+      /* HANDS for wall */
+      mpHands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${f}`});
+      mpHands.setOptions({maxNumHands:2,modelComplexity:1,minDetectionConfidence:0.7,minTrackingConfidence:0.65});
+      mpHands.onResults(r=>{handResults=r;});
+      mpCam=new Camera(vid,{onFrame:async()=>{await mpHands.send({image:vid});},width:320,height:240});
+    }else{
+      /* POSE for floor */
+      mpPose=new Pose({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/${f}`});
+      mpPose.setOptions({modelComplexity:1,smoothLandmarks:true,minDetectionConfidence:0.6,minTrackingConfidence:0.55});
+      mpPose.onResults(r=>{poseResults=r;});
+      mpCam=new Camera(vid,{onFrame:async()=>{await mpPose.send({image:vid});},width:320,height:240});
+    }
     await mpCam.start();
     skelReady=true;
     document.getElementById('hud-dot').className='dot g';
-    document.getElementById('hud-st').textContent='Hands ready ✦';
-    document.getElementById('cw-st').textContent='Tracking hands';
+    document.getElementById('hud-st').textContent='Tracking ✦';
   }catch(e){
-    console.warn('Hands init failed:',e);
+    console.warn('Skeleton init failed:',e);
     skelReady=false;
-    document.getElementById('hud-st').textContent='Skeleton failed — touch mode';
     enableMouseFallback();
   }
 }
 
-/* ── landmark → screen coords (mirrored X) ── */
-function l2s(lm){ return{x:(1-lm.x)*W, y:lm.y*H}; }
-function l2c(lm,cw,ch){ return{x:(1-lm.x)*cw, y:lm.y*ch}; }
+function l2s(lm){return{x:(1-lm.x)*W,y:lm.y*H};}
+function l2c(lm,cw,ch){return{x:(1-lm.x)*cw,y:lm.y*ch};}
 
-/* ── movement threshold check ── */
 const prevPos={};
 function moved(id,x,y,thr=6){
-  const p=prevPos[id]; prevPos[id]={x,y};
-  if(!p) return true;
+  const p=prevPos[id];prevPos[id]={x,y};
+  if(!p)return true;
   return Math.hypot(x-p.x,y-p.y)>thr;
 }
 
-/* ── spawn cooldown per point ── */
 const sCD={};
-const CD={firework:120,ripple:150,galaxy:420,sand:55,lightning:220,ink:55};
+const CD={firework:120,ripple:150,galaxy:420,sand:55,lightning:220,ink:55,light:30};
 function trySpawn(id,x,y,big=false){
   const now=Date.now();
-  if(now-(sCD[id]||0)<(CD[FX]||110)) return;
+  if(now-(sCD[id]||0)<(CD[FX]||110))return;
   sCD[id]=now;
   doSpawn(x,y,big);
 }
 function doSpawn(x,y,big=false){
-  if(FX==='firework') addFW(x,y,big);
-  else if(FX==='ripple')    addRipple(x,y);
-  else if(FX==='galaxy')    addGalaxy(x,y);
-  else if(FX==='sand')      addSand(x,y);
-  else if(FX==='lightning') addLightning(x,y);
-  else if(FX==='ink')       addInk(x,y);
+  if(FX==='firework')addFW(x,y,big);
+  else if(FX==='ripple')addRipple(x,y);
+  else if(FX==='galaxy')addGalaxy(x,y);
+  else if(FX==='sand')addSand(x,y);
+  else if(FX==='lightning')addLightning(x,y);
+  else if(FX==='ink')addInk(x,y);
+  else if(FX==='light')addLightTrail(x,y);
 }
 
-/* ── detect pinch gesture (thumb tip near index tip) ── */
 function isPinching(lms){
-  const t=l2s(lms[4]), i=l2s(lms[8]);
-  return Math.hypot(t.x-i.x,t.y-i.y) < W*0.04; // ~4% of screen width
+  const t=l2s(lms[4]),i=l2s(lms[8]);
+  return Math.hypot(t.x-i.x,t.y-i.y)<W*0.04;
 }
 
-/* ── process hand results each frame ── */
 function processHands(){
-  if(!handResults?.multiHandLandmarks?.length) return false;
+  if(!handResults?.multiHandLandmarks?.length)return false;
   const hands=handResults.multiHandLandmarks;
 
-  /* draw skeleton on cam window canvas */
   const cwEl=document.getElementById('cw-canvas');
   const cc=cwEl.getContext('2d');
-  const W2=cwEl.width, H2=cwEl.height;
+  const W2=cwEl.width,H2=cwEl.height;
   cc.clearRect(0,0,W2,H2);
 
   hands.forEach((lms,hi)=>{
     const col=hi===0?'rgba(0,200,255,0.88)':'rgba(255,80,200,0.88)';
-
-    /* ── draw skeleton on cam window ── */
-    cc.strokeStyle=col; cc.lineWidth=1.3;
-    for(const[a,b] of HAND_CONN){
-      const pa=l2c(lms[a],W2,H2), pb=l2c(lms[b],W2,H2);
-      cc.beginPath(); cc.moveTo(pa.x,pa.y); cc.lineTo(pb.x,pb.y); cc.stroke();
+    cc.strokeStyle=col;cc.lineWidth=1.3;
+    for(const[a,b]of HAND_CONN){
+      const pa=l2c(lms[a],W2,H2),pb=l2c(lms[b],W2,H2);
+      cc.beginPath();cc.moveTo(pa.x,pa.y);cc.lineTo(pb.x,pb.y);cc.stroke();
     }
     lms.forEach((lm,li)=>{
       const p=l2c(lm,W2,H2);
-      const isTip=TIPS.includes(li), isKnuck=KNUCKLES.includes(li);
+      const isTip=TIPS.includes(li),isKnuck=KNUCKLES.includes(li);
       cc.beginPath();
-      cc.arc(p.x,p.y, isTip?4:isKnuck?2.5:1.8, 0,Math.PI*2);
-      cc.fillStyle=isTip?(hi===0?'#00c8ff':'#ff50c8')
-        : isKnuck?'rgba(255,255,255,.7)':'rgba(255,255,255,.35)';
+      cc.arc(p.x,p.y,isTip?4:isKnuck?2.5:1.8,0,Math.PI*2);
+      cc.fillStyle=isTip?(hi===0?'#00c8ff':'#ff50c8'):isKnuck?'rgba(255,255,255,.7)':'rgba(255,255,255,.35)';
       cc.fill();
     });
 
-    /* ── check pinch → big burst ── */
     const pinching=isPinching(lms);
-
-    /* ── spawn from all 21 landmarks with smoothing ── */
     lms.forEach((lm,li)=>{
       const raw=l2s(lm);
-      const sm=getSmoothed(`h${hi}_${li}`, raw.x, raw.y);
-
-      // determine movement threshold per point type
-      let thr, big=false;
+      const sm=getSmoothed(`h${hi}_${li}`,raw.x,raw.y);
+      let thr,big=false;
       if(TIPS.includes(li)){
-        thr=4;                          // fingertips — very sensitive
-        big=pinching&&(li===4||li===8); // big burst on pinch tips
-      } else if(MID_TIPS.includes(li)){
+        thr=4;
+        big=pinching&&(li===4||li===8);
+      }else if(MID_TIPS.includes(li)){
         thr=7;
-      } else if(KNUCKLES.includes(li)){
+      }else if(KNUCKLES.includes(li)){
         thr=9;
-      } else if(li===WRIST){
-        thr=14; // wrist needs bigger movement
-      } else {
+      }else if(li===WRIST){
+        thr=14;
+      }else{
         thr=10;
       }
-
-      if(moved(`h${hi}_${li}`, sm.x, sm.y, thr)){
-        trySpawn(`h${hi}_${li}`, sm.x, sm.y, big);
+      if(moved(`h${hi}_${li}`,sm.x,sm.y,thr)){
+        trySpawn(`h${hi}_${li}`,sm.x,sm.y,big);
       }
     });
   });
-
   return true;
 }
 
-/* ── mouse/touch fallback ── */
+function processPose(){
+  if(!poseResults?.poseLandmarks)return false;
+  const lms=poseResults.poseLandmarks;
+
+  const cwEl=document.getElementById('cw-canvas');
+  const cc=cwEl.getContext('2d');
+  const W2=cwEl.width,H2=cwEl.height;
+  cc.clearRect(0,0,W2,H2);
+
+  cc.strokeStyle='rgba(80,255,160,0.7)';cc.lineWidth=1.5;
+  for(const[a,b]of POSE_CONN){
+    if((lms[a].visibility||0)<0.4||(lms[b].visibility||0)<0.4)continue;
+    const pa=l2c(lms[a],W2,H2),pb=l2c(lms[b],W2,H2);
+    cc.beginPath();cc.moveTo(pa.x,pa.y);cc.lineTo(pb.x,pb.y);cc.stroke();
+  }
+  lms.forEach((lm,i)=>{
+    if((lm.visibility||0)<0.4)return;
+    const p=l2c(lm,W2,H2);
+    cc.beginPath();cc.arc(p.x,p.y,2.5,0,Math.PI*2);
+    cc.fillStyle='rgba(80,255,160,0.9)';cc.fill();
+  });
+
+  /* spawn from feet + ankles */
+  const points=[
+    {idx:POSE_LM.L_ANKLE,id:'la',thr:6},
+    {idx:POSE_LM.R_ANKLE,id:'ra',thr:6},
+    {idx:POSE_LM.L_FOOT,id:'lf',thr:6},
+    {idx:POSE_LM.R_FOOT,id:'rf',thr:6},
+    {idx:POSE_LM.L_KNEE,id:'lk',thr:10},
+    {idx:POSE_LM.R_KNEE,id:'rk',thr:10}
+  ];
+  let spawned=false;
+  points.forEach(({idx,id,thr})=>{
+    const lm=lms[idx];
+    if((lm.visibility||0)<0.45)return;
+    const p=l2s(lm);
+    if(moved(id,p.x,p.y,thr)){
+      trySpawn(id,p.x,p.y);
+      spawned=true;
+    }
+  });
+  return spawned;
+}
+
 const mouse={x:0,y:0,active:false};
 function enableMouseFallback(){
   pc.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;mouse.active=true;});
@@ -624,114 +559,95 @@ function enableMouseFallback(){
   pc.addEventListener('touchend',()=>mouse.active=false);
 }
 
-/* ════════════ PARTICLES ════════════
-   Each array capped at MAX_PARTICLES total.
-   No radialGradient spam — use simple arcs.
-   No globalCompositeOperation switches mid-loop.
-═══════════════════════════════════ */
+/* ════════════ PARTICLES ════════════ */
 const FW_PAL=[[255,80,120],[255,40,40],[255,160,40],[255,220,40],[40,220,255],[180,80,255],[255,255,255],[80,255,180],[255,100,200],[100,200,255]];
-const sparks=[],circles=[],stars=[],grains=[],bolts=[],inkD=[];
+const sparks=[],circles=[],stars=[],grains=[],bolts=[],inkD=[],lightTrails=[];
 
-function totalP(){ return sparks.length+circles.length+stars.length+grains.length+bolts.length+inkD.length; }
+function totalP(){return sparks.length+circles.length+stars.length+grains.length+bolts.length+inkD.length+lightTrails.length;}
 
-/* Firework */
 function addFW(x,y,big=false){
-  if(totalP()>MAX_PARTICLES) return;
+  if(totalP()>MAX_PARTICLES)return;
   const c1=FW_PAL[randi(0,10)],c2=FW_PAL[randi(0,10)];
-  const n=big?60:35, sp=big?rand(7,18):rand(5,13);
+  const n=big?60:35,sp=big?rand(7,18):rand(5,13);
   for(let i=0;i<n;i++){
     const a=(i/n)*Math.PI*2+rand(-.1,.1),s=sp*rand(.6,1.4),c=Math.random()<.3?c2:c1;
-    sparks.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:1,
-      decay:rand(.016,.03),r:c[0],g:c[1],b:c[2],w:rand(1,2.5),
-      tail:[],grav:rand(.06,.14),twinkle:Math.random()<.25});
+    sparks.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:1,decay:rand(.016,.03),r:c[0],g:c[1],b:c[2],w:rand(1,2.5),tail:[],grav:rand(.06,.14),twinkle:Math.random()<.25});
   }
 }
 function drawFW(){
   ctx.globalCompositeOperation='lighter';
   for(let i=sparks.length-1;i>=0;i--){
     const s=sparks[i];
-    s.tail.push({x:s.x,y:s.y}); if(s.tail.length>6) s.tail.shift();
-    s.vy+=s.grav; s.vx*=.97; s.vy*=.97; s.x+=s.vx; s.y+=s.vy; s.life-=s.decay;
+    s.tail.push({x:s.x,y:s.y});if(s.tail.length>6)s.tail.shift();
+    s.vy+=s.grav;s.vx*=.97;s.vy*=.97;s.x+=s.vx;s.y+=s.vy;s.life-=s.decay;
     if(s.life<=0){sparks.splice(i,1);continue;}
-    /* draw tail as single polyline — one path instead of N paths */
     if(s.tail.length>1){
       const al=s.life*(s.twinkle?(.5+Math.random()*.5):1)*.85;
-      ctx.beginPath(); ctx.moveTo(s.tail[0].x,s.tail[0].y);
-      for(let j=1;j<s.tail.length;j++) ctx.lineTo(s.tail[j].x,s.tail[j].y);
+      ctx.beginPath();ctx.moveTo(s.tail[0].x,s.tail[0].y);
+      for(let j=1;j<s.tail.length;j++)ctx.lineTo(s.tail[j].x,s.tail[j].y);
       ctx.lineTo(s.x,s.y);
       ctx.strokeStyle=`rgba(${s.r},${s.g},${s.b},${al.toFixed(2)})`;
-      ctx.lineWidth=s.w; ctx.lineCap='round'; ctx.stroke();
+      ctx.lineWidth=s.w;ctx.lineCap='round';ctx.stroke();
     }
-    /* head dot */
-    ctx.beginPath(); ctx.arc(s.x,s.y,s.w*2,0,Math.PI*2);
-    ctx.fillStyle=`rgba(255,255,255,${(s.life*.8).toFixed(2)})`; ctx.fill();
+    ctx.beginPath();ctx.arc(s.x,s.y,s.w*2,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,255,${(s.life*.8).toFixed(2)})`;ctx.fill();
   }
   ctx.globalCompositeOperation='source-over';
 }
 
-/* Ripple */
 function addRipple(x,y){
-  if(totalP()>MAX_PARTICLES) return;
+  if(totalP()>MAX_PARTICLES)return;
   const h=randi(0,360);
-  circles.push({x,y,r:0,maxR:Math.min(W,H)*rand(.1,.22),life:1,
-    decay:rand(.012,.02),speed:rand(3,7),hue:h,w:rand(1.5,3)});
+  circles.push({x,y,r:0,maxR:Math.min(W,H)*rand(.1,.22),life:1,decay:rand(.012,.02),speed:rand(3,7),hue:h,w:rand(1.5,3)});
 }
 function drawRipple(){
   ctx.globalCompositeOperation='lighter';
   for(let i=circles.length-1;i>=0;i--){
-    const c=circles[i]; c.r+=c.speed; c.life-=c.decay;
+    const c=circles[i];c.r+=c.speed;c.life-=c.decay;
     if(c.r>c.maxR||c.life<=0){circles.splice(i,1);continue;}
     const al=c.life*(1-c.r/c.maxR*.6);
-    ctx.beginPath(); ctx.arc(c.x,c.y,c.r,0,Math.PI*2);
+    ctx.beginPath();ctx.arc(c.x,c.y,c.r,0,Math.PI*2);
     ctx.strokeStyle=`hsla(${c.hue},100%,70%,${al.toFixed(2)})`;
-    ctx.lineWidth=c.w*c.life; ctx.stroke();
+    ctx.lineWidth=c.w*c.life;ctx.stroke();
   }
   ctx.globalCompositeOperation='source-over';
 }
 
-/* Galaxy */
 function addGalaxy(x,y){
-  if(totalP()>MAX_PARTICLES) return;
+  if(totalP()>MAX_PARTICLES)return;
   const h=[rand(180,260),rand(280,340),rand(30,70)],arms=randi(2,3);
   for(let a=0;a<arms;a++){
     const aa=(a/arms)*Math.PI*2,n=randi(25,45);
     for(let i=0;i<n;i++){
       const t=i/n,ang=aa+t*Math.PI*2.2+rand(-.12,.12),dist=t*rand(35,100);
-      stars.push({x:x+Math.cos(ang)*dist,y:y+Math.sin(ang)*dist,
-        vx:(Math.cos(ang+Math.PI/2)*dist*.012+rand(-.25,.25))*rand(.5,1.3),
-        vy:(Math.sin(ang+Math.PI/2)*dist*.012+rand(-.25,.25))*rand(.5,1.3),
-        life:1,decay:rand(.008,.02),size:rand(.8,2.5),
-        hue:h[a%3]+rand(-18,18),sat:rand(70,100),lit:rand(65,92),
-        twinkle:Math.random()<.35,delay:t*.2});
+      stars.push({x:x+Math.cos(ang)*dist,y:y+Math.sin(ang)*dist,vx:(Math.cos(ang+Math.PI/2)*dist*.012+rand(-.25,.25))*rand(.5,1.3),vy:(Math.sin(ang+Math.PI/2)*dist*.012+rand(-.25,.25))*rand(.5,1.3),life:1,decay:rand(.008,.02),size:rand(.8,2.5),hue:h[a%3]+rand(-18,18),sat:rand(70,100),lit:rand(65,92),twinkle:Math.random()<.35,delay:t*.2});
     }
   }
 }
 function drawGalaxy(){
   ctx.globalCompositeOperation='lighter';
   for(let i=stars.length-1;i>=0;i--){
-    const s=stars[i]; if(s.delay>0){s.delay-=.016;continue;}
-    s.x+=s.vx; s.y+=s.vy; s.life-=s.decay;
+    const s=stars[i];if(s.delay>0){s.delay-=.016;continue;}
+    s.x+=s.vx;s.y+=s.vy;s.life-=s.decay;
     if(s.life<=0){stars.splice(i,1);continue;}
     const al=s.life*(s.twinkle?(.5+Math.random()*.5):1);
-    ctx.beginPath(); ctx.arc(s.x,s.y,s.size,0,Math.PI*2);
-    ctx.fillStyle=`hsla(${s.hue},${s.sat}%,${s.lit}%,${al.toFixed(2)})`; ctx.fill();
+    ctx.beginPath();ctx.arc(s.x,s.y,s.size,0,Math.PI*2);
+    ctx.fillStyle=`hsla(${s.hue},${s.sat}%,${s.lit}%,${al.toFixed(2)})`;ctx.fill();
   }
   ctx.globalCompositeOperation='source-over';
 }
 
-/* Sand */
 function addSand(x,y){
-  if(totalP()>MAX_PARTICLES) return;
+  if(totalP()>MAX_PARTICLES)return;
   const pal=[[255,200,80],[220,160,60],[200,140,50],[255,230,140]];
   for(let i=0;i<randi(6,12);i++){
     const a=rand(-Math.PI*.6,Math.PI*1.6),sp=rand(1,4),c=pal[randi(0,4)];
-    grains.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-rand(0,1.5),
-      life:1,decay:rand(.014,.026),r:c[0],g:c[1],b:c[2],size:rand(1.5,3.5),grav:.16});
+    grains.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-rand(0,1.5),life:1,decay:rand(.014,.026),r:c[0],g:c[1],b:c[2],size:rand(1.5,3.5),grav:.16});
   }
 }
 function drawSand(){
   for(let i=grains.length-1;i>=0;i--){
-    const g=grains[i]; g.vy+=g.grav; g.vx*=.98; g.x+=g.vx; g.y+=g.vy; g.life-=g.decay;
+    const g=grains[i];g.vy+=g.grav;g.vx*=.98;g.x+=g.vx;g.y+=g.vy;g.life-=g.decay;
     if(g.life<=0||g.y>H+20){grains.splice(i,1);continue;}
     ctx.globalAlpha=g.life;
     ctx.fillStyle=`rgb(${g.r},${g.g},${g.b})`;
@@ -740,14 +656,13 @@ function drawSand(){
   ctx.globalAlpha=1;
 }
 
-/* Lightning */
 function addLightning(x,y){
-  if(totalP()>MAX_PARTICLES) return;
+  if(totalP()>MAX_PARTICLES)return;
   function br(x1,y1,x2,y2,d){
-    if(d<=0) return [];
+    if(d<=0)return[];
     const mx=(x1+x2)/2+rand(-28,28)*(d/4),my=(y1+y2)/2+rand(-28,28)*(d/4);
     const s=[{x1,y1,x2:mx,y2:my,d},{x1:mx,y1:my,x2,y2,d}];
-    if(Math.random()<.38&&d>1) s.push(...br(mx,my,mx+rand(-55,55),my+rand(12,55),d-1));
+    if(Math.random()<.38&&d>1)s.push(...br(mx,my,mx+rand(-55,55),my+rand(12,55),d-1));
     return s;
   }
   const h=randi(160,280);
@@ -757,131 +672,180 @@ function addLightning(x,y){
 function drawLightning(){
   ctx.globalCompositeOperation='lighter';
   for(let i=bolts.length-1;i>=0;i--){
-    const b=bolts[i]; b.life-=b.decay;
+    const b=bolts[i];b.life-=b.decay;
     if(b.life<=0){bolts.splice(i,1);continue;}
     const fl=Math.random()<.3?.15:1;
     for(const s of b.segs){
       const al=b.life*fl*(s.d/4+.3);
-      ctx.beginPath(); ctx.moveTo(s.x1,s.y1); ctx.lineTo(s.x2,s.y2);
+      ctx.beginPath();ctx.moveTo(s.x1,s.y1);ctx.lineTo(s.x2,s.y2);
       ctx.strokeStyle=`hsla(${b.h},90%,88%,${al.toFixed(2)})`;
-      ctx.lineWidth=s.d*.6; ctx.lineCap='round'; ctx.stroke();
+      ctx.lineWidth=s.d*.6;ctx.lineCap='round';ctx.stroke();
     }
   }
   ctx.globalCompositeOperation='source-over';
 }
 
-/* Ink */
 function addInk(x,y){
-  if(totalP()>MAX_PARTICLES) return;
+  if(totalP()>MAX_PARTICLES)return;
   const h=randi(0,360),l=randi(2,5);
   for(let k=0;k<l;k++)
     for(let i=0;i<randi(8,16);i++){
       const a=rand(0,Math.PI*2),sp=rand(.3,2+k*.6);
-      inkD.push({x:x+rand(-4,4),y:y+rand(-4,4),
-        vx:Math.cos(a)*sp*(1+k*.15),vy:Math.sin(a)*sp*(1+k*.15),
-        life:1,decay:rand(.008,.016),hue:h+rand(-22,22),
-        sat:rand(60,100),lit:rand(28,60),size:rand(2,5+k),grow:rand(.015,.055)});
+      inkD.push({x:x+rand(-4,4),y:y+rand(-4,4),vx:Math.cos(a)*sp*(1+k*.15),vy:Math.sin(a)*sp*(1+k*.15),life:1,decay:rand(.008,.016),hue:h+rand(-22,22),sat:rand(60,100),lit:rand(28,60),size:rand(2,5+k),grow:rand(.015,.055)});
     }
 }
 function drawInk(){
   for(let i=inkD.length-1;i>=0;i--){
-    const d=inkD[i]; d.vx*=.96; d.vy*=.96; d.x+=d.vx; d.y+=d.vy;
-    d.size+=d.grow; d.life-=d.decay;
+    const d=inkD[i];d.vx*=.96;d.vy*=.96;d.x+=d.vx;d.y+=d.vy;d.size+=d.grow;d.life-=d.decay;
     if(d.life<=0){inkD.splice(i,1);continue;}
-    ctx.beginPath(); ctx.arc(d.x,d.y,d.size,0,Math.PI*2);
+    ctx.beginPath();ctx.arc(d.x,d.y,d.size,0,Math.PI*2);
     ctx.fillStyle=`hsla(${d.hue},${d.sat}%,${d.lit}%,${Math.pow(d.life,.7)*.62})`;
     ctx.fill();
   }
 }
 
+/* LIGHT PAINTING — smooth glowing trails like in reference image */
+function addLightTrail(x,y){
+  if(totalP()>MAX_PARTICLES)return;
+  lightTrails.push({x,y,life:1,decay:rand(.008,.012),hue:randi(0,360),size:rand(8,16),blur:rand(4,8),trail:[]});
+}
+function drawLightPaint(){
+  ctx.globalCompositeOperation='lighter';
+  for(let i=lightTrails.length-1;i>=0;i--){
+    const lt=lightTrails[i];
+    lt.trail.push({x:lt.x,y:lt.y});
+    if(lt.trail.length>40)lt.trail.shift();
+    lt.life-=lt.decay;
+    if(lt.life<=0){lightTrails.splice(i,1);continue;}
+    
+    /* draw smooth glowing line */
+    for(let j=1;j<lt.trail.length;j++){
+      const p1=lt.trail[j-1],p2=lt.trail[j];
+      const al=lt.life*(j/lt.trail.length)*0.7;
+      const g=ctx.createLinearGradient(p1.x,p1.y,p2.x,p2.y);
+      g.addColorStop(0,`hsla(${lt.hue},100%,60%,0)`);
+      g.addColorStop(.5,`hsla(${lt.hue},100%,70%,${al})`);
+      g.addColorStop(1,`hsla(${lt.hue},100%,60%,0)`);
+      ctx.strokeStyle=g;
+      ctx.lineWidth=lt.size;
+      ctx.lineCap='round';
+      ctx.lineJoin='round';
+      ctx.beginPath();
+      ctx.moveTo(p1.x,p1.y);
+      ctx.lineTo(p2.x,p2.y);
+      ctx.stroke();
+    }
+    
+    /* head glow */
+    const h=lt.hue;
+    const grd=ctx.createRadialGradient(lt.x,lt.y,0,lt.x,lt.y,lt.size*2);
+    grd.addColorStop(0,`hsla(${h},100%,90%,${(lt.life*.9).toFixed(2)})`);
+    grd.addColorStop(.5,`hsla(${h},100%,70%,${(lt.life*.5).toFixed(2)})`);
+    grd.addColorStop(1,`hsla(${h},100%,50%,0)`);
+    ctx.beginPath();
+    ctx.arc(lt.x,lt.y,lt.size*2,0,Math.PI*2);
+    ctx.fillStyle=grd;
+    ctx.fill();
+  }
+  ctx.globalCompositeOperation='source-over';
+}
+
 /* ════════════ MAIN LOOP ════════════ */
 let fc=0;
-/* update cam window every N frames — not every frame */
 const CAM_WIN_INTERVAL=3;
 
 function loop(){
   if(!running){requestAnimationFrame(loop);return;}
   fc++;
 
-  /* background */
-  const fade=FX==='galaxy'?.11:FX==='ink'?.07:.3;
+  const fade=FX==='galaxy'?.11:FX==='ink'?.07:FX==='light'?.05:.3;
   if(showTrails){
-    ctx.fillStyle=`rgba(0,0,0,${fade})`; ctx.fillRect(0,0,W,H);
-  } else {
-    ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle=`rgba(0,0,0,${fade})`;ctx.fillRect(0,0,W,H);
+  }else{
+    ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
   }
 
-  /* update cam-win canvas with live video every 3 frames */
-  if(fc%CAM_WIN_INTERVAL===0 && camWinVis){
+  if(fc%CAM_WIN_INTERVAL===0&&camWinVis){
     const cw=document.getElementById('cw-canvas');
     const vid=document.getElementById('raw-video');
     if(vid.readyState>=2){
       const cc=cw.getContext('2d');
-      /* mirror the video */
-      cc.save(); cc.translate(cw.width,0); cc.scale(-1,1);
+      cc.save();cc.translate(cw.width,0);cc.scale(-1,1);
       cc.drawImage(vid,0,0,cw.width,cw.height);
       cc.restore();
     }
   }
 
-  /* skeleton tracking */
   let det=false;
   if(skelReady){
-    det=processHands();
-  } else if(mouse.active){
+    if(projType==='wall') det=processHands();
+    else det=processPose();
+  }else if(mouse.active){
     trySpawn('mouse',mouse.x,mouse.y);
     det=true;
   }
 
-  /* skeleton overlay on main projection canvas */
-  if(showSkel && skelReady && handResults?.multiHandLandmarks?.length){
-    ctx.save();
-    handResults.multiHandLandmarks.forEach((lms,hi)=>{
-      const col=hi===0?'rgba(0,200,255,':'rgba(255,80,200,';
-      /* connections — subtle */
-      ctx.strokeStyle=col+'0.15)'; ctx.lineWidth=0.8;
-      for(const[a,b] of HAND_CONN){
-        const pa=l2s(lms[a]), pb=l2s(lms[b]);
-        ctx.beginPath(); ctx.moveTo(pa.x,pa.y); ctx.lineTo(pb.x,pb.y); ctx.stroke();
-      }
-      /* fingertip glow dots */
-      ctx.globalCompositeOperation='lighter';
-      TIPS.forEach(li=>{
-        const sm=smoothed[`h${hi}_${li}`];
-        if(!sm) return;
-        const grd=ctx.createRadialGradient(sm.x,sm.y,0,sm.x,sm.y,10);
-        grd.addColorStop(0, col+'0.4)');
-        grd.addColorStop(1, col+'0)');
-        ctx.beginPath(); ctx.arc(sm.x,sm.y,10,0,Math.PI*2);
-        ctx.fillStyle=grd; ctx.fill();
+  /* skeleton overlay */
+  if(showSkel&&skelReady){
+    if(projType==='wall'&&handResults?.multiHandLandmarks?.length){
+      ctx.save();
+      handResults.multiHandLandmarks.forEach((lms,hi)=>{
+        const col=hi===0?'rgba(0,200,255,':'rgba(255,80,200,';
+        ctx.strokeStyle=col+'0.15)';ctx.lineWidth=0.8;
+        for(const[a,b]of HAND_CONN){
+          const pa=l2s(lms[a]),pb=l2s(lms[b]);
+          ctx.beginPath();ctx.moveTo(pa.x,pa.y);ctx.lineTo(pb.x,pb.y);ctx.stroke();
+        }
+        ctx.globalCompositeOperation='lighter';
+        TIPS.forEach(li=>{
+          const sm=smoothed[`h${hi}_${li}`];
+          if(!sm)return;
+          const grd=ctx.createRadialGradient(sm.x,sm.y,0,sm.x,sm.y,10);
+          grd.addColorStop(0,col+'0.4)');
+          grd.addColorStop(1,col+'0)');
+          ctx.beginPath();ctx.arc(sm.x,sm.y,10,0,Math.PI*2);
+          ctx.fillStyle=grd;ctx.fill();
+        });
+        ctx.globalCompositeOperation='source-over';
       });
-      ctx.globalCompositeOperation='source-over';
-    });
-    ctx.restore();
+      ctx.restore();
+    }else if(projType==='floor'&&poseResults?.poseLandmarks){
+      ctx.save();
+      ctx.strokeStyle='rgba(80,255,160,0.15)';ctx.lineWidth=0.8;
+      for(const[a,b]of POSE_CONN){
+        const pa=l2s(poseResults.poseLandmarks[a]),pb=l2s(poseResults.poseLandmarks[b]);
+        ctx.beginPath();ctx.moveTo(pa.x,pa.y);ctx.lineTo(pb.x,pb.y);ctx.stroke();
+      }
+      ctx.restore();
+    }
   }
 
-  /* draw particles */
-  if(FX==='firework')  drawFW();
-  else if(FX==='ripple')    drawRipple();
-  else if(FX==='galaxy')    drawGalaxy();
-  else if(FX==='sand')      drawSand();
-  else if(FX==='lightning') drawLightning();
-  else if(FX==='ink')       drawInk();
+  if(FX==='firework')drawFW();
+  else if(FX==='ripple')drawRipple();
+  else if(FX==='galaxy')drawGalaxy();
+  else if(FX==='sand')drawSand();
+  else if(FX==='lightning')drawLightning();
+  else if(FX==='ink')drawInk();
+  else if(FX==='light')drawLightPaint();
 
-  /* HUD status every 24 frames */
   if(fc%24===0){
-    const hands=handResults?.multiHandLandmarks?.length||0;
-    const st=skelReady?(hands?`${hands} hand${hands>1?'s':''} ✦`:'scanning…'):(mouse.active?'touch ✦':'move hands');
-    document.getElementById('hud-st').textContent=st;
+    if(projType==='wall'){
+      const hands=handResults?.multiHandLandmarks?.length||0;
+      const st=skelReady?(hands?`${hands} hand${hands>1?'s':''} ✦`:'scanning…'):(mouse.active?'touch ✦':'move hands');
+      document.getElementById('hud-st').textContent=st;
+      if(camWinVis)document.getElementById('cw-st').textContent=skelReady?(hands?`${hands} hand${hands>1?'s':''} detected`:'no hands'):'mouse mode';
+    }else{
+      const body=poseResults?.poseLandmarks?1:0;
+      const st=skelReady?(body?'Body ✦':'scanning…'):(mouse.active?'touch ✦':'move');
+      document.getElementById('hud-st').textContent=st;
+      if(camWinVis)document.getElementById('cw-st').textContent=skelReady?(body?'Body detected':'no body'):'mouse mode';
+    }
     document.getElementById('hud-dot').className='dot '+(det?'g':'y');
-    if(camWinVis) document.getElementById('cw-st').textContent=
-      skelReady?(hands?`${hands} hand${hands>1?'s':''} detected`:'no hands'):'mouse mode';
   }
 
   requestAnimationFrame(loop);
 }
 
-/* ════════════ UI CONTROLS ════════════ */
 function toggleSkel(){showSkel=!showSkel;document.getElementById('bp-skel').classList.toggle('on',showSkel);}
 function toggleTrail(){showTrails=!showTrails;document.getElementById('bp-trail').classList.toggle('on',showTrails);}
 function toggleCamWin(){
@@ -889,11 +853,10 @@ function toggleCamWin(){
   document.getElementById('cam-win').style.display=camWinVis?'flex':'none';
 }
 function goFull(){
-  if(!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
+  if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});
   else document.exitFullscreen();
 }
 
-/* FX pills */
 document.querySelectorAll('.fp').forEach(b=>{
   b.addEventListener('click',()=>{
     FX=b.dataset.fx;
@@ -902,18 +865,15 @@ document.querySelectorAll('.fp').forEach(b=>{
   });
 });
 
-/* ════════════ CAM WINDOW SIZE SETUP ════════════ */
 (function(){
   const cw=document.getElementById('cw-canvas');
   const win=document.getElementById('cam-win');
-  /* set canvas size once visible */
   const ro=new ResizeObserver(()=>{
-    if(win.offsetWidth>0){ cw.width=win.offsetWidth; cw.height=Math.round(win.offsetWidth*240/320); }
+    if(win.offsetWidth>0){cw.width=win.offsetWidth;cw.height=Math.round(win.offsetWidth*240/320);}
   });
   ro.observe(win);
 })();
 
-/* ════════════ DRAGGABLE CAM WINDOW ════════════ */
 (()=>{
   const win=document.getElementById('cam-win');
   const hdr=document.getElementById('cw-hdr');
@@ -931,6 +891,7 @@ document.querySelectorAll('.fp').forEach(b=>{
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.5.1675469404/pose.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
 </body>
 </html>
